@@ -6,11 +6,28 @@ class hashTable:
             self.hashMap.append([])
 
     def hashInsert(self, package_id, value):
-        self.values[package_id % 10] = value
+        hash = self.hashKey(package_id)
+        keyValue = [package_id, value]
+        if self.hashMap[hash] is None:
+            self.hashMap[hash] = list([keyValue])
+            return True
+        else:
+            for item in self.hashMap[hash]:
+                if item[0] == package_id:
+                    item[1] = keyValue
+                    return True
+            self.hashMap[hash].append(keyValue)
 
+    def hashKey(self, package_id) -> int:
+        return package_id % len(self.hashMap)
+    
     def hashSearch(self, package_id):
-        key = package_id % 10
-        return self.values[key]
+        hash = self.hashKey(package_id)
+        if self.hashMap[hash] is not None:
+            for item in self.hashMap[hash]:
+                if item[0] == package_id:
+                    return item[1]
+        return None
 
     def __len__(self):
         return len(self.values)
