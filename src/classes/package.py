@@ -1,3 +1,4 @@
+from classes.deliveryStatus import deliveryStatus
 class Package:
 
     def __init__(self, params: list):
@@ -8,6 +9,7 @@ class Package:
         self.zip_code = params[4]
         self.deadline = params[5]
         self.package_weight = params[6]
+        self.delivery_status = deliveryStatus.AT_THE_HUB
         self.delivery_time = None
         self.loading_time = None
 
@@ -28,3 +30,11 @@ class Package:
     Weight: {self.package_weight}{nl}
     Delivery Time: {self.delivery_time}{nl}
     Loading Time: {self.loading_time}{nl}"""
+
+    def setStatus(self, status):
+        if status == 1:
+            self.delivery_status = deliveryStatus.EN_ROUTE
+        elif status == 2:
+            self.delivery_status = deliveryStatus.DELIVERED
+        else:
+            self.delivery_status = deliveryStatus.AT_THE_HUB
