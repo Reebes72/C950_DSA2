@@ -1,6 +1,6 @@
+## ANDREW REEVES - ID# 011598549
 import csv
 from data_structure.hashTable import hashTable
-from classes.package import Package
 FILEPATH: str = "src/resources/csv/package_file.csv"
 
 
