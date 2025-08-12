@@ -12,6 +12,7 @@ class Package:
         self.delivery_status = deliveryStatus.AT_THE_HUB
         self.delivery_time = None
         self.loading_time = None
+        self.truck_id = None
 
     def __str__(self):
         nl = "\n"
