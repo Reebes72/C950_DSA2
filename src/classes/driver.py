@@ -6,6 +6,7 @@ class Driver:
 
     #Gets a truck for the driver, checks if any trucks are available
     # and assigns driver to truck.
+    # O(n) Complexity
     def getTruck(self, trucks):
         for truck in trucks:
             if truck.driver is None:
@@ -14,7 +15,8 @@ class Driver:
                 return True
         return False
     
-    #Remove Driver from truck and vice versa.
+    # Remove Driver from truck and vice versa.
+    # O(1) Complexity
     def dropTruck(self):
         self.truck.driver = None
         self.truck = None
