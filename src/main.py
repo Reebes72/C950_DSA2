@@ -1,20 +1,23 @@
 ## ANDREW REEVES - ID# 011598549
 import csv
+from datetime import datetime, timedelta
 from data_structure.hashTable import hashTable
-FILEPATH: str = "src/resources/csv/package_file.csv"
+import utils
 
-
-def initialize_packageFile(filename: str, container: hashTable):
-    with open(filename, 'r') as f:
-        reader = csv.reader(f)
-        for line in reader:
-            container.hashInsert(line[0], line)
+from classes.package import Package
+# Constants
+PACKAGES_PATH: str = "src/resources/csv/packages.csv"
+PACKAGES: list = utils.initialize_package_file(PACKAGES_PATH)
+DISTANCES_PATH: str = "src/resources/csv/distances.csv"
+DISTANCES: list = utils.initialize_distance_file(DISTANCES_PATH)
+ADDRESSES_PATH: str = "src/resources/csv/addresses.csv"
+ADDRESSES: list = utils.initialize_address_file(ADDRESSES_PATH)
+TRUCKS: int = 3
+DRIVERS: int = 2
 
 
 def main():
-    stopsHashTable: hashTable = hashTable()
-    initialize_packageFile(FILEPATH, stopsHashTable)
-    
+    stopsHashTable: hashTable = initialize_package_file(PACKAGES_PATH)
 
 
 if __name__ == '__main__':

@@ -6,17 +6,19 @@ class Package:
     # Initialization of Package Object via list of parameters
     # Sets other objects to default values
     def __init__(self, params: list):
-        self.package_id: int = params[0]
+        self.package_id: int = int(params[0])
         self.delivery_address: str = params[1]
         self.city: str = params[2]
         self.state: str = params[3]
         self.zip_code: str = params[4]
         self.deadline = params[5]
-        self.package_weight: int = params[6]
-        self.notes: str = params[7]
+        self.package_weight: int = int(params[6])
+        self.notes = None
+        if len(params) > 7:
+            self.notes = params[7]
         self.delivery_status: deliveryStatus = deliveryStatus.AT_THE_HUB
-        self.delivery_time = None
-        self.loading_time = None
+        self.delivery_time: datetime = None
+        self.loading_time: datetime = None
         self.truck_id: int = None
         self.on_truck: bool = False
     # String Representation of Package
