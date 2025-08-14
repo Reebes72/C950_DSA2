@@ -1,8 +1,6 @@
 from datetime import datetime, timedelta
 from data_structure.hashTable import hashTable
-from classes.truck import Truck
 from classes.package import Package
-from classes.driver import Driver
 
 def main_menu(table: hashTable, trucks: list):
     print("!!!!!!!!!!!!!!!!!!!!")
