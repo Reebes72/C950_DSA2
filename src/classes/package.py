@@ -13,7 +13,7 @@ class Package:
         self.zip_code: str = params[4]
         self.deadline = params[5]
         self.package_weight: int = int(params[6])
-        self.notes = None
+        self.notes: str = None
         if len(params) > 7:
             self.notes = params[7]
         self.delivery_status: deliveryStatus = deliveryStatus.AT_THE_HUB

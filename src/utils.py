@@ -2,6 +2,8 @@ import csv
 
 from data_structure.hashTable import hashTable
 from classes.package import Package
+from classes.truck import Truck
+from classes.driver import Driver
 
 
 # Opens csv, iterates through each line, inserts a Package Object into hashMap
@@ -47,8 +49,198 @@ def initialize_address_file(filename: str) -> list:
     return container
 
 
+# Gets Constants from main to assign drivers and trucks
+# Returns list of driver objects and truck objects
+# O(N) Complexity
+def initialize_trucks_drivers(trucks: int, drivers: int):
+    truck_list: list = []
+    driver_list: list = []
+    minimum_trucks_or_drivers = min(trucks, drivers)
+    for truck in range(1, minimum_trucks_or_drivers + 1, 1):
+        truck_list.append(Truck(truck))
+    for driver in range(1, minimum_trucks_or_drivers + 1, 1):
+        driver = Driver(driver)
+        driver.getTruck(truck_list)
+        driver_list.append(driver)
+    return truck_list, driver_list
+
 # Returns sum of rows in file
 # O(N) Complexity
 def number_of_addresses(filename: str) -> int:
     with open(filename, 'r') as file:
         return sum(1 for row in file)
+
+# Takes 2 addresses, distance and addresses files, returns distance between the two addresses
+# O(1) Complexity
+def distance_between_addresses(add1: int, add2: int, distances: list, addresses: list) -> float:
+    return distances[addresses.index(add1)][addresses.index(add2)]
+
+# Adds packages to truck and sorts after checking for remaining packages, truck has space and is at hub.
+# Handles cases with notes that require address change or must be delivered together
+# Sorts the packages in truck for efficient delivery
+# O(N^3 Complexity
+def load_truck(table: hashTable, truck: Truck):
+    while len(get_unloaded_packages(table, truck)) > 0 and not truck.full() and truck.at_hub is True:
+        if len(truck.packages) == 0:
+            address = truck.location
+        else: 
+            last_package: Package = table.hashSearch(truck.packages(len(truck.packages) - 1))
+            address: str = last_package.delivery_address
+        closest_package: Package = closest_package_on_truck(address, assignable_packages(table, truck))
+        truck.add_package(closest_package)
+        
+        #Wrong Address case
+        if closest_package.package_id == 9:
+            closest_package.delivery_address = "410 S State St"
+            closest_package.city = "Salt Lake City"
+            closest_package.state = "UT"
+            closest_package.zip_code = "84111"
+
+        
+        #Must be delivered together case
+        for items in delivered_together_packages(table):
+            if closest_package in items:
+                for associated in items:
+                    if associated.on_truck() is False:
+                        truck.add_package(associated)
+    sort_truck_packages(table, truck)
+
+
+# iterates through truck's Packages, finds the nearest stop relative to current
+# location, adds to sorted packages list, updates address, and removes the added package
+# Replaces truck's packages list with a sorted packages list.
+# O(N^2) Complexity
+def sort_truck_packages(table: hashTable, truck: Truck):
+    sorted_packages: list = []
+    address = truck.location
+    packages = truck.get_packages(table)
+    while len(packages) != 0:
+        closest: Package = find_closest(address, packages)
+        sorted_packages.append(closest.package_id)
+        address = closest.delivery_address
+        packages.remove(closest)
+    truck.packages = sorted_packages
+
+
+# Finds out the cloests package within a list of packages and returns it.
+# Iterates through package list, checks if the package already has a closest
+# package and checks if theres a better distance.
+# O(N) Complexity
+def find_closest(address, packages) -> Package:
+    closest_package: Package = None
+    best_distance: float = None
+    for package in packages:
+        if package is not None:
+            if closest_package is not None:
+                closest_package = package
+                closest_address = closest_package.delivery_address
+                best_distance = distance_between_addresses(closest_address, address)
+            else:
+                addr = package.delivery_address
+                dist = distance_between_addresses(addr, address)
+                if dist < best_distance:
+                    closest_package = package
+                    best_distance = dist
+    return closest_package
+
+# Ingest hash table and trucks list. Checks if packages still need delivered.
+# Marks packages as En Route, Removes packages from truck package list
+# Increments distance traveled, Returns Trucks to hub, and loads them back up.
+# O(N^5) Complexity
+def deliver_packages(table: hashTable, trucks: list):
+    truck: Truck
+    while not deliveries_completed(table)
+        for truck in trucks:
+            truck.set_en_route(table)
+            curr_add = truck.location
+            curr_index = 0
+            while len(truck.packages) > 0:
+                package: Package = hashTable.hashSearch(truck.packages[curr_index])
+                truck.remove_package(
+                                    hashTable.hashSearch(truck.packages[curr_index]),
+                                    table, 
+                                    distance_between_addresses(curr_add, package.delivery_address))
+            truck.return_truck(distance_between_addresses(curr_add, truck.location))
+        for truck in trucks:
+            load_truck(table, truck)
+
+
+# Iterates through hashmap to see if any packages still need to be delivered.
+# O(N) Complexity
+def deliveries_completed(table: hashTable) -> bool:
+    for package in table.hashMap:
+        if package is not None and package.delivery_time is None:
+            return False
+    return True
+
+
+def assignable_packages(table: hashTable, truck: Truck) -> list:
+    unassignable: list = unassignable_packages(table, truck)
+    assignable: list = []
+    for package in unassigned_packages(table):
+        if package is not None and package not in unassignable:
+            assignable.append(package)
+    return assignable
+
+
+def unassignable_packages(table: hashTable, truck: Truck) -> list:
+    unassignable: list = []
+    associated_packages: list = get_associated(table)
+    package: Package
+    for package in table.hashMap:
+        if package is not None:
+            if package.on_truck():
+                unassignable.append(package)
+            elif package.truck_id is not None and package.required_truck() is not truck.truck_id:
+                unassignable.append(package)
+            if len(associated_packages) > 0:
+                for item in associated_packages:
+                    if package in item:
+                        for associated in item:
+                            if associated not in unassignable:
+                                unassignable.append(associated)
+            elif package.delayed_arrival() is not None and package.delayed_arrival() > truck.time:
+                if package not in unassignable: 
+                    unassignable.append(package)
+    return unassignable
+
+
+def get_associated(table: hashTable):
+    associated: list = []
+    curr_package: Package
+    for curr_package in table.hashMap:
+        if curr_package is not None and "Must be delivered with" in curr_package.notes:
+            dir_associated = directly_associated(table, curr_package)
+            combine: bool= False
+            to_combine= None
+            if len(associated) > 0:
+                for package in dir_associated:
+                    for list in associated:
+                        if package in list:
+                            combine = True
+                            to_combine = list
+                            break
+            if combine:
+                for package in dir_associated:
+                    if package not in to_combine:
+                        to_combine.append(package)
+            else:
+                associated.append(dir_associated)
+    return associated
+
+
+def directly_associated(table: hashTable, package: Package) -> list:
+    if "Must be delivered with" in package.notes:
+        associated: list = [package]
+        notes = package.notes.replace(",", " ")
+        notes = notes.split()
+        ids = [int(id) for id in notes if id.isdigit()]
+        for id in ids:
+            package = table.hashSearch(id)
+            associated.append(package)
+            additional = directly_associated(table, package)
+            if additional is not None:
+                for add in additional:
+                    if add not in associated:
+                        associated.append(add)
+        return associated
