@@ -45,9 +45,9 @@ class Truck:
     # Adds the mileage for the distance traveled to the total
     # Adds the trip duration to the Truck's total
     # O(1) Complexity
-    def remove_package(self, id: int, HashTable: HashTable, distance: float):
-        package: Package = HashTable.hashSearch(id)
-        self.packages.remove(id)
+    def remove_package(self, id: Package, HashTable: HashTable, distance: float):
+        package: Package = HashTable.hashSearch(id.package_id)
+        self.packages.remove(id.package_id)
         self.at_hub = False
         self.add_miles(distance)
         self.time += timedelta(minutes=self.add_time(distance, self.speed))
@@ -68,7 +68,9 @@ class Truck:
     # Returns list of Package objects using List Comprehension
     # O(N) Complexity
     def get_packages(self, HashTable: HashTable):
-        package_list: list = [package_list.append(HashTable.hashSearch(id)) for id in self.packages]
+        package_list: list = []
+        for package in self.packages:
+            package_list.append(HashTable.hashSearch(package))
         return package_list
 
     # Utility function for timedelta() objects

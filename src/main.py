@@ -31,7 +31,7 @@ def main():
         trucks[len(trucks) - 1].time = delayed_start
     for truck in trucks:
         utils.load_truck(PACKAGES, truck)
-    utils.deliver_packages(PACKAGES, trucks, DISTANCES, ADDRESSES)
+    utils.deliver_packages(PACKAGES, trucks)
     cli.main_menu(PACKAGES, trucks)
 
 
