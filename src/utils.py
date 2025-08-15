@@ -20,17 +20,17 @@ def initialize_package_file(filename: str) -> list:
 # Opens csv, gets number of addresses, populates container(2D Array) with 0s
 # Iterates through entries in CSV, and sets distances
 # O(N^2) Complexity
-def initialize_distance_file(filename: str) -> list:
-    with open(filename, 'r') as f:
+def initialize_distance_file(distancePath: str, addressesPath: str) -> list:
+    with open(distancePath, 'r') as f:
         reader = csv.reader(f, delimiter=',')
-        addresses: int = number_of_addresses()
+        addresses: int = int(number_of_addresses(addressesPath))
         container: list = [[0 for _ in range(addresses)] for _ in range(addresses)]
         source_address: int = 0
         for address in reader:
             for index in range(addresses):
                 if address[index] != "":
-                    container[address][index] = float(address[index])
-                    container[index][address] = float(address[index])
+                    container[source_address][index] = float(address[index])
+                    container[index][source_address] = float(address[index])
             source_address += 1
         return container
 
@@ -43,8 +43,8 @@ def initialize_address_file(filename: str) -> list:
     with open(filename, 'r') as f:
         reader = csv.reader(f, delimiter=",")
         for line in reader:
-            full_address = line[0].split("\n")
-            street = full_address[1].strip()
+            # full_address = line[0].split(",")
+            street = line[1].strip()
             container.append(street)
     return container
 
@@ -80,13 +80,13 @@ def distance_between_addresses(add1: int, add2: int, distances: list, addresses:
 # Sorts the packages in truck for efficient delivery
 # O(N^3 Complexity
 def load_truck(table: hashTable, truck: Truck):
-    while len(get_unloaded_packages(table, truck)) > 0 and not truck.full() and truck.at_hub is True:
+    while len(assignable_packages(table, truck)) > 0 and not truck.full() and truck.at_hub is True:
         if len(truck.packages) == 0:
             address = truck.location
         else: 
             last_package: Package = table.hashSearch(truck.packages(len(truck.packages) - 1))
             address: str = last_package.delivery_address
-        closest_package: Package = closest_package_on_truck(address, assignable_packages(table, truck))
+        closest_package: Package = find_closest(address, assignable_packages(table, truck))
         truck.add_package(closest_package)
         
         #Wrong Address case
@@ -98,7 +98,7 @@ def load_truck(table: hashTable, truck: Truck):
 
         
         #Must be delivered together case
-        for items in delivered_together_packages(table):
+        for items in get_associated(table):
             if closest_package in items:
                 for associated in items:
                     if associated.on_truck() is False:
@@ -149,7 +149,7 @@ def find_closest(address, packages) -> Package:
 # O(N^5) Complexity
 def deliver_packages(table: hashTable, trucks: list):
     truck: Truck
-    while not deliveries_completed(table)
+    while not deliveries_completed(table):
         for truck in trucks:
             truck.set_en_route(table)
             curr_add = truck.location
@@ -163,6 +163,16 @@ def deliver_packages(table: hashTable, trucks: list):
             truck.return_truck(distance_between_addresses(curr_add, truck.location))
         for truck in trucks:
             load_truck(table, truck)
+
+
+def unassigned_packages(table: hashTable):
+    unassigned_packages = []
+    package: Package
+    for package in table.hashMap:
+        if package is not None and package.truck_assigned() is False:
+            unassigned_packages.append(package)
+
+    return unassigned_packages
 
 
 # Iterates through hashmap to see if any packages still need to be delivered.

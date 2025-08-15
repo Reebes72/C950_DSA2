@@ -83,5 +83,5 @@ class Truck:
     
     # True if truck full, false otherwise
     # O(1) Complexity
-    def full(self);
+    def full(self):
         return len(self.packages) == self.package_limit
