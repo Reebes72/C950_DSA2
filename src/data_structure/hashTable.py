@@ -1,34 +1,60 @@
-class hashTable:
+from classes.package import Package
 
-    def __init__(self, capacity: int = 10):
-        self.hashMap = []
-        for i in range(capacity):
-            self.hashMap.append([])
+class HashTable:
+    def __init__(self, capacity=40, low=0, high=1):
+        self.capacity = capacity
+        self.hashMap = [None] * capacity
+        self.bucket_status_table = ["INITIALIZED"] * capacity
+        self.resizing1 = low
+        self.resizing2 = high
 
-    def hashInsert(self, package_id, value):
-        hash = self.hashKey(int(package_id))
-        keyValue = [package_id, value]
-        if self.hashMap[hash] is None:
-            self.hashMap[hash] = list([keyValue])
-            return True
-        else:
-            for item in self.hashMap[hash]:
-                if item[0] == package_id:
-                    item[1] = keyValue
-                    return True
-            self.hashMap[hash].append(keyValue)
+    def hashInsert(self, package: Package):
+        i = 0
+        buckets_probed = 0
+        N = len(self.hashMap)
+        bucket = hash(package.package_id) % N
+        while buckets_probed < N:
+            if self.bucket_status_table[bucket] == "INITIALIZED" or self.bucket_status_table[bucket] == "EMPTIED":
+                self.hashMap[bucket] = package
+                self.bucket_status_table[bucket] = "OCCUPIED"
+                return True
+            i = i + 1
+            bucket = (hash(package.package_id) + (self.resizing1 * i) + (self.resizing2 * i ** 2)) % N
+            buckets_probed = buckets_probed + 1
+        self.resize()
+        self.insert(package)
+        return True
 
-    def hashKey(self, package_id: int) -> int:
-        return int(package_id) % len(self.hashMap)
-    
-    def hashSearch(self, package_id):
-        hash = self.hashKey(package_id)
-        if self.hashMap[hash] is not None:
-            for item in self.hashMap[hash]:
-                if item[0] == package_id:
-                    return item[1]
+    def hashSearch(self, key):
+        i = 0
+        buckets_probed = 0
+        N = len(self.hashMap)
+        bucket = hash(key) % N
+        while (self.bucket_status_table[bucket] != "INITIALIZED") and (buckets_probed < N):
+            if (self.hashMap[bucket] is not None) and (self.hashMap[bucket].package_id == key):
+                return self.hashMap[bucket]
+            i = i + 1
+            bucket = (hash(key) + self.resizing1 * i + self.resizing2 * i ** 2) % N
+            buckets_probed = buckets_probed + 1
         return None
 
-    def __len__(self):
-        return len(self.values)
-            
+    def resize(self):
+        resized_ht = HashTable(capacity=self.capacity * 2, resizing1=self.resizing1, resizing2=self.resizing2)
+        for package in self.hashMap:
+            resized_ht.insert(package)
+
+        self.capacity = resized_ht.capacity
+        self.hashMap = resized_ht.hashMap
+        self.bucket_status_table = resized_ht.bucket_status_table
+ 
+    def __str__(self):
+        s = "   --------\n"
+        index = 0
+        for item in self.hashMap:
+            value = str(item)
+            if item is None: 
+                value = 'E'
+            s += '{:2}:|{:^6}|\n'.format(index, value)
+            index += 1
+        s += "   --------"
+        return s

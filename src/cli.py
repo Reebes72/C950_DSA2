@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta
-from data_structure.hashTable import hashTable
+from data_structure.HashTable import HashTable
 from classes.package import Package
 
-def main_menu(table: hashTable, trucks: list):
+def main_menu(table: HashTable, trucks: list):
     print("!!!!!!!!!!!!!!!!!!!!")
     print("WGU - Parcel Service")
     print(" By: Andrew Reeves")
@@ -30,7 +30,7 @@ def main_menu(table: hashTable, trucks: list):
         quit()
 
 
-def general(table: hashTable, trucks: list):
+def general(table: HashTable, trucks: list):
     report_time: datetime = prompt_time()
     print("!!!!!!!!!!!!!!!!!!!!")
     print("Generated report on packages at " + report_time.strftime("%I:%M %p"))
@@ -62,7 +62,7 @@ def print_mileage(trucks: list, report_time: datetime):
     print("\nThe total mileage of all trucks at " + report_time.strftime("%I:%M %p") + " is %0.2f miles" % total_mileage)
 
 
-def query_package(table: hashTable, trucks: list):
+def query_package(table: HashTable, trucks: list):
     report_time: datetime = prompt_time()
     id = prompt_package_id(table)
     print("!!!!!!!!!!!!!!!!!!!!")
@@ -72,7 +72,7 @@ def query_package(table: hashTable, trucks: list):
     main_menu(table, trucks)
 
 
-def display_query(table: hashTable, package_id: int, report_time: datetime):
+def display_query(table: HashTable, package_id: int, report_time: datetime):
     package: Package = table.hashSearch(package_id)
     report_delta: timedelta = timedelta(hours=report_time.hour, minutes=report_time.minute)
     package_info: str = f"[Package ID = {package.package_id}]"

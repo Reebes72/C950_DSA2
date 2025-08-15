@@ -1,6 +1,6 @@
 from datetime import timedelta
 from classes.package import Package
-from data_structure.hashTable import hashTable
+from data_structure.HashTable import HashTable
 from classes.deliveryStatus import deliveryStatus
 
 
@@ -35,9 +35,9 @@ class Truck:
     # Sets all the packages' delivery status to En Route
     # Stamps a loading time.
     # O(N) Complexity
-    def set_en_route(self, hashTable: hashTable):
+    def set_en_route(self, HashTable: HashTable):
         for id in self.packages:
-            package: Package = hashTable.hashSearch(id)
+            package: Package = HashTable.hashSearch(id)
             package.delivery_status = deliveryStatus.EN_ROUTE
             package.loading_time = self.time
 
@@ -45,8 +45,8 @@ class Truck:
     # Adds the mileage for the distance traveled to the total
     # Adds the trip duration to the Truck's total
     # O(1) Complexity
-    def remove_package(self, id: int, hashTable: hashTable, distance: float):
-        package: Package = hashTable.hashSearch(id)
+    def remove_package(self, id: int, HashTable: HashTable, distance: float):
+        package: Package = HashTable.hashSearch(id)
         self.packages.remove(id)
         self.at_hub = False
         self.add_miles(distance)
@@ -67,13 +67,13 @@ class Truck:
 
     # Returns list of Package objects using List Comprehension
     # O(N) Complexity
-    def get_packages(self, hashTable: hashTable):
-        package_list: list = [package_list.append(hashTable.hashSearch(id)) for id in self.packages]
+    def get_packages(self, HashTable: HashTable):
+        package_list: list = [package_list.append(HashTable.hashSearch(id)) for id in self.packages]
         return package_list
 
     # Utility function for timedelta() objects
     # O(1) Complexity
-    def add_time(distance, speed):
+    def add_time(self, distance, speed):
         return distance/speed * 60
     
     # Increments distance traveled by miles

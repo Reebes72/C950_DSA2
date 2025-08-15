@@ -1,6 +1,6 @@
 import csv
 
-from data_structure.hashTable import hashTable
+from data_structure.HashTable import HashTable
 from classes.package import Package
 from classes.truck import Truck
 from classes.driver import Driver
@@ -9,11 +9,11 @@ from classes.driver import Driver
 # Opens csv, iterates through each line, inserts a Package Object into hashMap
 # O(N) Complexity
 def initialize_package_file(filename: str) -> list:
-    container: hashTable = hashTable()
+    container: HashTable = HashTable()
     with open(filename, 'r') as f:
         reader = csv.reader(f)
         for line in reader:
-            container.hashInsert(int(line[0]), Package(line))
+            container.hashInsert(Package(line))
     return container
 
 
@@ -79,7 +79,7 @@ def distance_between_addresses(add1: int, add2: int, distances: list, addresses:
 # Handles cases with notes that require address change or must be delivered together
 # Sorts the packages in truck for efficient delivery
 # O(N^3 Complexity
-def load_truck(table: hashTable, truck: Truck):
+def load_truck(table: HashTable, truck: Truck):
     while len(assignable_packages(table, truck)) > 0 and not truck.full() and truck.at_hub is True:
         if len(truck.packages) == 0:
             address = truck.location
@@ -110,7 +110,7 @@ def load_truck(table: hashTable, truck: Truck):
 # location, adds to sorted packages list, updates address, and removes the added package
 # Replaces truck's packages list with a sorted packages list.
 # O(N^2) Complexity
-def sort_truck_packages(table: hashTable, truck: Truck):
+def sort_truck_packages(table: HashTable, truck: Truck):
     sorted_packages: list = []
     address = truck.location
     packages = truck.get_packages(table)
@@ -147,7 +147,7 @@ def find_closest(address, packages) -> Package:
 # Marks packages as En Route, Removes packages from truck package list
 # Increments distance traveled, Returns Trucks to hub, and loads them back up.
 # O(N^5) Complexity
-def deliver_packages(table: hashTable, trucks: list):
+def deliver_packages(table: HashTable, trucks: list, distances: list, addresses: list):
     truck: Truck
     while not deliveries_completed(table):
         for truck in trucks:
@@ -155,17 +155,17 @@ def deliver_packages(table: hashTable, trucks: list):
             curr_add = truck.location
             curr_index = 0
             while len(truck.packages) > 0:
-                package: Package = hashTable.hashSearch(truck.packages[curr_index])
+                package: Package = HashTable.hashSearch(truck.packages[curr_index])
                 truck.remove_package(
-                                    hashTable.hashSearch(truck.packages[curr_index]),
+                                    HashTable.hashSearch(truck.packages[curr_index]),
                                     table, 
                                     distance_between_addresses(curr_add, package.delivery_address))
-            truck.return_truck(distance_between_addresses(curr_add, truck.location))
+            truck.return_truck(distance_between_addresses(curr_add, truck.location, distances, addresses))
         for truck in trucks:
             load_truck(table, truck)
 
 
-def unassigned_packages(table: hashTable):
+def unassigned_packages(table: HashTable):
     unassigned_packages = []
     package: Package
     for package in table.hashMap:
@@ -177,14 +177,14 @@ def unassigned_packages(table: hashTable):
 
 # Iterates through hashmap to see if any packages still need to be delivered.
 # O(N) Complexity
-def deliveries_completed(table: hashTable) -> bool:
+def deliveries_completed(table: HashTable) -> bool:
     for package in table.hashMap:
         if package is not None and package.delivery_time is None:
             return False
     return True
 
 
-def assignable_packages(table: hashTable, truck: Truck) -> list:
+def assignable_packages(table: HashTable, truck: Truck) -> list:
     unassignable: list = unassignable_packages(table, truck)
     assignable: list = []
     for package in unassigned_packages(table):
@@ -193,13 +193,13 @@ def assignable_packages(table: hashTable, truck: Truck) -> list:
     return assignable
 
 
-def unassignable_packages(table: hashTable, truck: Truck) -> list:
+def unassignable_packages(table: HashTable, truck: Truck) -> list:
     unassignable: list = []
     associated_packages: list = get_associated(table)
     package: Package
     for package in table.hashMap:
         if package is not None:
-            if package.on_truck():
+            if package.on_truck:
                 unassignable.append(package)
             elif package.truck_id is not None and package.required_truck() is not truck.truck_id:
                 unassignable.append(package)
@@ -215,7 +215,7 @@ def unassignable_packages(table: hashTable, truck: Truck) -> list:
     return unassignable
 
 
-def get_associated(table: hashTable):
+def get_associated(table: HashTable):
     associated: list = []
     curr_package: Package
     for curr_package in table.hashMap:
@@ -239,7 +239,7 @@ def get_associated(table: hashTable):
     return associated
 
 
-def directly_associated(table: hashTable, package: Package) -> list:
+def directly_associated(table: HashTable, package: Package) -> list:
     if "Must be delivered with" in package.notes:
         associated: list = [package]
         notes = package.notes.replace(",", " ")
