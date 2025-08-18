@@ -32,9 +32,9 @@ def main():
         trucks[len(trucks) - 1].time = delayed_start
     for truck in trucks:
         utils.fill_truck(PACKAGES, truck)
-        # TSHOOT
         for package in truck.packages:
             print(package)
+        print("BREAK")
     utils.deliver_packages(PACKAGES, trucks)
     cli.main_menu(PACKAGES, trucks)
 

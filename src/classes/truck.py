@@ -68,10 +68,7 @@ class Truck:
     # Returns list of Package objects using List Comprehension
     # O(N) Complexity
     def get_packages(self, HashTable: HashTable):
-        package_list: list = []
-        for package in self.packages:
-            package_list.append(HashTable.hashSearch(package))
-        return package_list
+        return self.packages
 
     # Utility function for timedelta() objects
     # O(1) Complexity
@@ -86,4 +83,7 @@ class Truck:
     # True if truck full, false otherwise
     # O(1) Complexity
     def full(self):
-        return len(self.packages) == self.package_limit
+        if len(self.packages) == self.package_limit:
+            return True
+        else:
+            return False
