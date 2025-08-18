@@ -14,7 +14,7 @@ class Package:
         self.deadline = params[5]
         self.package_weight: int = int(params[6])
         self.notes: str = ""
-        if len(params) > 7:
+        if len(params) == 8:
             self.notes = params[7]
         self.delivery_status: deliveryStatus = deliveryStatus.AT_THE_HUB
         self.delivery_time: datetime = None
@@ -25,20 +25,24 @@ class Package:
     def __str__(self):
         nl = "\n"
         return f"""
-    Package: {self.package_id}{nl}
-    Address: {self.delivery_address}, {self.city}, {self.state}, {self.zip_code}{nl}
-    Weight: {self.package_weight}{nl}
-    Delivery Time: {self.delivery_time}{nl}
-    Loading Time: {self.loading_time}{nl}"""
+    Package ID: {self.package_id}
+    Address: {self.delivery_address}, {self.city}, {self.state}, {self.zip_code}
+    Weight: {self.package_weight}
+    Truck ID: {self.truck_id}
+    Delivery Time: {self.delivery_time}
+    Loading Time: {self.loading_time}
+    Delivery Status: {self.delivery_status}"""
     # String Representation of Package
     def __repr__(self):
         nl = "\n"
-        return f"""
-    Package: {self.package_id}{nl}
-    Address: {self.delivery_address}, {self.city}, {self.zip_code}{nl}
-    Weight: {self.package_weight}{nl}
-    Delivery Time: {self.delivery_time}{nl}
-    Loading Time: {self.loading_time}{nl}"""
+        return f"""    Package: {self.package_id}
+    Address: {self.delivery_address}, {self.city}, {self.zip_code}
+    Weight: {self.package_weight}
+    Truck ID: {self.truck_id}
+    Delivery Time: {self.delivery_time}
+    Loading Time: {self.loading_time}
+    Delivery Status: {self.delivery_status}"""
+
     # Sets the delivery status
     # Complexity O(1)
     def set_status(self, status):
@@ -49,9 +53,14 @@ class Package:
         else:
             self.delivery_status = deliveryStatus.AT_THE_HUB
     # True if there is a truck assigned, false if not.
+    # Sets truck as true.
     # O(1) Complexity
     def truck_assigned(self) -> bool:
-        return True if self.truck_assigned is not None else False
+        if self.truck_id is not None:
+            self.on_truck = True
+            return True
+        else:
+            return False
     # Gets the required truck for the package, or returns none.
     # Complexity O(N)
     def required_truck(self):

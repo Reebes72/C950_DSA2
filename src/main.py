@@ -23,6 +23,7 @@ DRIVERS: int = 2
 def main():
     trucks, drivers = utils.initialize_trucks_drivers(TRUCKS, DRIVERS)
     delayed_start = None
+    package: Package
     for package in PACKAGES.hashMap:
         if package is not None and package.delayed_arrival() is not None:
             if delayed_start is None or delayed_start > package.delayed_arrival():
@@ -30,7 +31,10 @@ def main():
     if len(trucks) > 1:
         trucks[len(trucks) - 1].time = delayed_start
     for truck in trucks:
-        utils.load_truck(PACKAGES, truck)
+        utils.fill_truck(PACKAGES, truck)
+        # TSHOOT
+        for package in truck.packages:
+            print(package)
     utils.deliver_packages(PACKAGES, trucks)
     cli.main_menu(PACKAGES, trucks)
 

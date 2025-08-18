@@ -37,7 +37,7 @@ def general(table: HashTable, trucks: list):
     print("!!!!!!!!!!!!!!!!!!!!")
     for package in range(1, len(table.hashMap) + 1):
         if package is not None:
-            display_package_query(table, package, report_time)
+            display_query(table, package, report_time)
     print_mileage(trucks, report_time)
     main_menu(table, trucks)
 
@@ -62,7 +62,7 @@ def print_mileage(trucks: list, report_time: datetime):
     print("\nThe total mileage of all trucks at " + report_time.strftime("%I:%M %p") + " is %0.2f miles" % total_mileage)
 
 
-def query_package(table: HashTable, trucks: list):
+def query(table: HashTable, trucks: list):
     report_time: datetime = prompt_time()
     id = prompt_package_id(table)
     print("!!!!!!!!!!!!!!!!!!!!")
@@ -87,7 +87,7 @@ def display_query(table: HashTable, package_id: int, report_time: datetime):
     package_info += "\n\tCity: " + package.city
     package_info += "\n\tAddress: " + package.delivery_address
     package_info += "\n\tZIP Code: " + package.zip_code
-    package_info += "\n\tPackage Weight: " + package.package_weight + " kilograms"
+    package_info += "\n\tPackage Weight: " + str(package.package_weight) + " kilograms"
     package_info += "\n\tDelivery Deadline: " + package.deadline
     print(package_info)
 
@@ -104,13 +104,13 @@ def prompt_time():
     return report_time
 
 
-def prompt_package_id(ht):
+def prompt_package_id(table: HashTable):
     package_id = None
     while package_id is None:
         user_input = input("Please enter the ID of the package you would like to view: ")
 
         if user_input.isdigit():
-            if ht.lookup(int(user_input)) is not None:
+            if table.hashSearch(int(user_input)) is not None:
                 package_id = int(user_input)
             else:
                 print("\tNo package found with the provided ID.\n")

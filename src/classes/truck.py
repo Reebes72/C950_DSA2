@@ -18,16 +18,17 @@ class Truck:
         self.speed: int = speed
         self.distance_traveled = 0
         self.driver = None
-        self.location = "4001 South 700 East"
+        self.hub_address = "4001 South 700 East"
+        self.current_address = self.hub_address
         self.at_hub = True
         self.mileage_times = []
         self.time = timedelta(hours=8, minutes=0, seconds=0)
         
-    # Returns false if truck is full. Adds package_id to list.
+    # Returns false if truck is full. Adds package to list.
     # O(1) Complexity
     def add_package(self, package: Package):
-        if not self.full():
-            self.packages.append(package.package_id)
+        if len(self.packages) < self.package_limit:
+            self.packages.append(package)
             package.truck_id = self.truck_id
         else:
             return False
@@ -37,9 +38,8 @@ class Truck:
     # O(N) Complexity
     def set_en_route(self, HashTable: HashTable):
         for id in self.packages:
-            package: Package = HashTable.hashSearch(id)
-            package.delivery_status = deliveryStatus.EN_ROUTE
-            package.loading_time = self.time
+                id.delivery_status = deliveryStatus.EN_ROUTE
+                id.loading_time = self.time
 
     # Removes the package of the specified package_id from the list
     # Adds the mileage for the distance traveled to the total
@@ -47,7 +47,7 @@ class Truck:
     # O(1) Complexity
     def remove_package(self, id: Package, HashTable: HashTable, distance: float):
         package: Package = HashTable.hashSearch(id.package_id)
-        self.packages.remove(id.package_id)
+        self.packages.remove(package)
         self.at_hub = False
         self.add_miles(distance)
         self.time += timedelta(minutes=self.add_time(distance, self.speed))
