@@ -36,7 +36,7 @@ def initialize_distance_file(distancePath: str = DISTANCES_PATH, addressesPath: 
     with open(distancePath, 'r') as f:
         reader = csv.reader(f, delimiter=',')
         addresses: int = int(number_of_addresses(addressesPath))
-        container: list = [[0 for _ in range(addresses)] for _ in range(addresses)]
+        container: list = [[0 for x in range(addresses)] for y in range(addresses)]
         source_address: int = 0
         for address in reader:
             for index in range(addresses):
@@ -292,6 +292,7 @@ def deliveries_completed(table: HashTable) -> bool:
     package: Package
     for package in table.hashMap:
         if package is not None and package.delivery_status != deliveryStatus.DELIVERED:
+            print("WHY AM I HERE?")
             return False
     return True
 def directly_associated(table: HashTable, package: Package) -> list:
