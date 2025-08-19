@@ -82,7 +82,7 @@ def initialize_trucks_drivers(trucks: int, drivers: int):
 
 # Takes 2 addresses, distance and addresses files, returns distance between the two addresses
 # O(1) Complexity
-def distance_between_addresses(add1: int, add2: int) -> float:
+def distance_between_addresses(add1: str, add2: str) -> float:
     return DISTANCES[ADDRESSES.index(add1)][ADDRESSES.index(add2)]
 
 # Adds packages to truck and sorts after checking for remaining packages, truck has space and is at hub.
@@ -130,14 +130,27 @@ def fill_truck(table: HashTable, truck: Truck):
                 package.zip_code = "84111"
                 # sort_truck_packages(table, truck)
 
-            if package.on_truck is False and truck.full() is False:
+            if package.truck_assigned() is False and truck.full() is False:
                 #Delivered on specific truck
                 if "Can" in package.notes.split():
                     required_truck = [trk for trk in package.notes if trk.isdigit()]
                     for req in required_truck:
-                        if int(req) == truck.truck_id:
+                        if int(req) == truck.truck_id and truck.full() is False:
                             package.truck_id = truck.truck_id
                             truck.add_package(package)
+                            package.truck_assigned()
+                        if truck.full() is True and package.truck_assigned() is False:
+                            for pack in truck.packages:
+                                if pack.notes == "":
+                                    pack.package_id = None
+                                    truck.packages.pop(truck.pack.index(pack))
+                                    pack.on_truck = False
+                                    package.truck_id = truck.truck_id
+                                    truck.add_package(package)
+                                    package.truck_assigned()
+                                    break
+                                    
+                    
                     # truck.packages = sort_truck_packages(table, truck)
                 #Delivered with specific packages
                 #Checks for space on the truck
@@ -145,12 +158,16 @@ def fill_truck(table: HashTable, truck: Truck):
                     note: str = package.notes.replace(',', '')
                     delivered_together = [trk for trk in note.split() if trk.isdigit()]
                     if truck.package_limit - len(truck.packages) >= len(delivered_together) + 1:
-                        package.truck_id = truck.truck_id
-                        truck.add_package(package)
-                        for together in delivered_together:
-                            linked_package = table.hashSearch(int(together))
-                            linked_package.truck_id = truck.truck_id
-                            truck.add_package(table.hashSearch(int(together)))
+                        if truck.truck_id == 2:
+                            package.truck_id = truck.truck_id
+                            truck.add_package(package)
+                            package.truck_assigned()
+                            for together in delivered_together:
+                                linked_package = table.hashSearch(int(together))
+                                linked_package.truck_id = truck.truck_id
+                                truck.add_package(table.hashSearch(int(together)))
+                                linked_package.truck_assigned()
+                        
                     # truck.packages = sort_truck_packages(table, truck)
                 #Delayed packages
                 elif "Delayed" in package.notes.split():
@@ -162,10 +179,12 @@ def fill_truck(table: HashTable, truck: Truck):
                     if truck.truck_id == 3:
                         package.truck_id = truck.truck_id
                         truck.add_package(package)
+                        package.truck_assigned()
                     # truck.packages = sort_truck_packages(table, truck)
                 else:
                     package.truck_id = truck.truck_id
                     truck.add_package(package)
+                    package.truck_assigned()
                     # truck.packages = sort_truck_packages(table, truck)
 
     # while len(truck.packages) < truck.package_limit:
@@ -239,20 +258,7 @@ def deliver_packages(table: HashTable, trucks: list):
                                     distance_between_addresses(curr_add, package.delivery_address))
                     curr_add = package.delivery_address
                     truck.current_address = curr_add
-            truck.return_truck(distance_between_addresses(curr_add, truck.hub_address))                    
-        for truck in trucks:
-            fill_truck(table, truck)
-
-
-def unassigned_packages(table: HashTable):
-    unassigned_packages = []
-    for package in table.hashMap:
-        if package is not None and package.truck_assigned() is False:
-            unassigned_packages.append(package)
-
-    return unassigned_packages
-
-
+            # truck.return_truck(distance_between_addresses(curr_add, truck.hub_address))                    
 # Iterates through hashmap to see if any packages still need to be delivered.
 # O(N) Complexity
 def deliveries_completed(table: HashTable) -> bool:
@@ -261,85 +267,6 @@ def deliveries_completed(table: HashTable) -> bool:
         if package is not None and package.delivery_status != deliveryStatus.DELIVERED:
             return False
     return True
-
-
-def assignable_packages(table: HashTable, truck: Truck) -> list:
-    unassignable: list = unassignable_packages(table, truck)
-    assignable: list = []
-    for package in table.hashMap:
-        if package is not None and package not in unassignable:
-            assignable.append(package)
-    return assignable
-
-
-def unassignable_packages(table: HashTable, truck: Truck) -> list:
-    unassignable_packages = []
-    associated_package_lists = get_associated(table)
-    package: Package
-    # Iterate through the Package list
-    for package in table.hashMap:
-        if package is not None:
-            # If a Package is already assigned to a Truck, append it to the list
-            if package.on_truck:
-                unassignable_packages.append(package)
-
-            # If a Package is required to be on a Truck different from the one passed, add the Package to the
-            # unassignable Packages list
-            elif package.required_truck() is not None and package.required_truck() is not truck.truck_id:
-                unassignable_packages.append(package)
-
-                # If the current unassignable Package ends up in one of the lists of associated Packages, ensure
-                # all associated Packages are added to the unassignable Packages list
-                if len(associated_package_lists) > 0:
-                    for list in associated_package_lists:
-                        if str(package.package_id) in str(list[0].package_id):
-                            for associated_package in list:
-                                if associated_package not in unassignable_packages:
-                                    unassignable_packages.append(associated_package)
-
-            # If the Package is delayed and has not arrived at the depot yet, it cannot be assigned to the Truck yet
-            elif package.delayed_arrival() is not None and package.delayed_arrival() > truck.time:
-                if package not in unassignable_packages:
-                    unassignable_packages.append(package)
-
-    return unassignable_packages
-
-
-def get_associated(table: HashTable):
-    associated_package_list = []
-    for current_package in table.hashMap:
-        if current_package is not None and "Must be delivered with" in current_package.notes:
-            # Create a new list of associated Packages that must be delivered with the current Package
-            associated_packages = directly_associated(table, current_package)
-
-            # Variables to check if we need to combine lists of associated Packages that must be delivered together
-            combine_lists = False
-            list_to_combine = None
-
-            # Space-Time Complexity: O(N^2)
-            # Check if a Package in the current list already exists in a list that we've appended to the master list
-            if len(associated_package_list) > 0:
-                for package in associated_packages:
-                    for list in associated_package_list:
-                        if package in list:
-                            combine_lists = True
-                            list_to_combine = list
-                            break
-
-            # Space-Time Complexity: O(N)
-            # If any Packages in the current associated_packages exist in a list that was appended to the master
-            # list, do not add a new list but instead add directly to the already created list
-            if combine_lists:
-                for package in associated_packages:
-                    if package not in list_to_combine:
-                        list_to_combine.append(package)
-            # If none of the Packages in the current associated_packages exist in a list that was appended to the
-            # master list, add this as a new list
-            else:
-                associated_package_list.append(associated_packages)
-    return associated_package_list
-
-
 def directly_associated(table: HashTable, package: Package) -> list:
     if "Must be delivered with" in package.notes:
         associated: list = []
