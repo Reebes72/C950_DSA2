@@ -85,40 +85,54 @@ def initialize_trucks_drivers(trucks: int, drivers: int):
 def distance_between_addresses(add1: str, add2: str) -> float:
     return DISTANCES[ADDRESSES.index(add1)][ADDRESSES.index(add2)]
 
-# Adds packages to truck and sorts after checking for remaining packages, truck has space and is at hub.
-# Handles cases with notes that require address change or must be delivered together
-# Sorts the packages in truck for efficient delivery
-# O(N^3 Complexity)
-def load_truck(table: HashTable, truck: Truck):
-    
-    print(len(assignable_packages(table, truck)))
-    while len(assignable_packages(table, truck)) > 0 and not truck.full() == True and truck.at_hub is True:
-        if len(truck.packages) == 0:
-            address = truck.hub_address
-        else:
-            last_package: Package = table.hashSearch(truck.packages[len(truck.packages) - 1])
-            address: str = last_package.delivery_address
-        closest_package: Package = find_closest(address, assignable_packages(table, truck))
-        truck.add_package(closest_package)
-        
-        #Wrong Address case
-        if closest_package.package_id == 9:
-            closest_package.delivery_address = "410 S State St"
-            closest_package.city = "Salt Lake City"
-            closest_package.state = "UT"
-            closest_package.zip_code = "84111"
-            sort_truck_packages(table, truck)
-
-        
-        #Must be delivered together case
-        for items in get_associated(table):
-            for item in items:
-                if str(closest_package.package_id) in str(item.package_id):
-                    for associated in items:
-                        if associated.on_truck() is False:
-                            truck.add_package(associated)
-    sort_truck_packages(table, truck)
-
+# Look at each package's notes, and group packages by those that should be delivered together
+def prime_trucks(truck: Truck, table: HashTable):
+    package: Package
+    delivered_together: list = []
+    for package in table.hashMap:
+        if package.notes == "":
+            pass
+        # Checks for "Must be delivered with" in notes
+        # Assigns to first truck
+        elif "Must" in package.notes.split():
+            note: str = package.notes.replace(',', '')
+            delivered_together = [trk for trk in note.split() if trk.isdigit()]
+            for together in delivered_together:
+                if truck.truck_id == 1 and package.truck_id is None:
+                    package.truck_id = truck.truck_id
+                    truck.add_package(package)
+                    package.truck_assigned()
+        # Checks for "Can only be delivered on specific truck" in notes
+        # Assigns to Truck 2
+        elif "Can" in package.notes.split():
+            required_truck = [trk for trk in package.notes if trk.isdigit()]
+            for req in required_truck:
+                if int(req) == truck.truck_id and truck.full() is False and package.truck_id is None:
+                    package.truck_id = truck.truck_id
+                    truck.add_package(package)
+                    package.truck_assigned()
+        elif "Delayed" in package.notes.split():
+            delayed_until: list = [trk for trk in package.notes if trk.isdigit()]
+            if len(delayed_until) == 4:
+                time: timedelta = timedelta(hours=int(delayed_until[0] + delayed_until[1]), minutes=int(delayed_until[2] + delayed_until[3]))
+            else:
+                time: timedelta = timedelta(hours=int(delayed_until[0]), minutes=int(delayed_until[1] + delayed_until[2]))
+            if truck.truck_id == 3 and package.truck_id is None:
+                package.truck_id = truck.truck_id
+                truck.add_package(package)
+                package.truck_assigned()
+                package.delayed_arrival()
+    # Adds any packages with same address to the same truck
+    for package in table.hashMap:
+        for pack in truck.packages:
+            if package.delivery_address == pack.delivery_address and package.package_id != pack.package_id:
+                package.truck_id = truck.truck_id
+                truck.add_package(package)
+                package.truck_assigned()
+                package.delayed_arrival()
+    for package in truck.packages:
+        if truck.packages.count(package) > 1:
+            pack = truck.packages.pop(truck.packages.index(package))
 
 def fill_truck(table: HashTable, truck: Truck):
     for package in table.hashMap:
@@ -180,15 +194,10 @@ def fill_truck(table: HashTable, truck: Truck):
                         package.truck_id = truck.truck_id
                         truck.add_package(package)
                         package.truck_assigned()
-                    # truck.packages = sort_truck_packages(table, truck)
                 else:
                     package.truck_id = truck.truck_id
                     truck.add_package(package)
                     package.truck_assigned()
-                    # truck.packages = sort_truck_packages(table, truck)
-
-    # while len(truck.packages) < truck.package_limit:
-    #     #TODO: Case for non-filled truck.
 
 
 # iterates through truck's Packages, finds the nearest stop relative to current
@@ -199,32 +208,27 @@ def sort_truck_packages(table: HashTable, truck: Truck):
     sorted_packages: list = []
     address = truck.hub_address
     packages = truck.get_packages(table)
-    while len(packages) != 0:
-        closest: Package = find_closest(address, packages)
-        sorted_packages.append(closest)
-        address = closest.delivery_address
-        packages.remove(closest)
-    truck.packages = sorted_packages
+    # while len(packages) != 0:
+    #     closest: Package = find_closest(address, packages)
+    #     sorted_packages.append(closest)
+    #     address = closest.delivery_address
+    #     packages.remove(closest)
+    # truck.packages = sorted_packages
+    for package in packages:
+        current: Package = package
+        closest: Package = find_closest(address, current, packages)
+        
+         
+         
+        
 
 
-# def sort_packages(packages: list):
-#     sorted_packages: list = []
-#     address = "4001 South 700 East"
-#     for package in packages:
-#         while len(packages) != 0:
-#             closest: Package = find_closest(address, packages)
-#             sorted_packages.append(closest)
-#             address = closest.delivery_address
-#             packages.remove(closest)
-#     packages = sorted_packages
-#     return packages
-    
 # Finds out the cloests package within a list of packages and returns it.
 # Iterates through package list, checks if the package already has a closest
 # package and checks if theres a better distance.
 # O(N) Complexity
-def find_closest(address, packages) -> Package:
-    closest_package: Package = None
+def find_closest(address, current_package, packages) -> Package:
+    closest_package: Package = current_package
     best_distance: float = None
     for package in packages:
         if package is not None:

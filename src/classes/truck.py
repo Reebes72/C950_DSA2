@@ -32,7 +32,7 @@ class Truck:
             package.truck_id = self.truck_id
         else:
             return False
-    
+
     # Sets all the packages' delivery status to En Route
     # Stamps a loading time.
     # O(N) Complexity
