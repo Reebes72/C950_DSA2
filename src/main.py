@@ -30,22 +30,28 @@ def main():
                 delayed_start = package.delayed_arrival()
     if len(trucks) > 1:
         trucks[len(trucks) - 1].time = delayed_start
+    # for truck in trucks:
+    #     utils.prime_trucks(truck, PACKAGES)
+    #     packages = [i.package_id for i in truck.packages]
+    #     # print(packages)
+    # utils.fill_truck(PACKAGES, trucks[0])
+    # # for package in trucks[0].packages:
+    # #     print(package)
+    # # print("BREAK")
+    # utils.fill_truck(PACKAGES, trucks[2])
+    # # for package in trucks[2].packages:
+    # #     print(package)
+    # # print("BREAK")
+    # utils.fill_truck(PACKAGES, trucks[1])
+    # for package in trucks[1].packages:
+    #     print(package)
+    # print("BREAK")
+
     for truck in trucks:
         utils.prime_trucks(truck, PACKAGES)
-        packages = [i.package_id for i in truck.packages]
-        print(packages)
-    utils.fill_truck(PACKAGES, trucks[0])
-    for package in trucks[0].packages:
-        print(package)
-    print("BREAK")
-    utils.fill_truck(PACKAGES, trucks[2])
-    for package in trucks[2].packages:
-        print(package)
-    print("BREAK")
-    utils.fill_truck(PACKAGES, trucks[1])
-    for package in trucks[1].packages:
-        print(package)
-    print("BREAK")
+        utils.fill_truck(PACKAGES, truck)
+    for truck in trucks:
+        utils.sort_truck_packages(PACKAGES, truck)
     utils.deliver_packages(PACKAGES, trucks)
     cli.main_menu(PACKAGES, trucks)
 
