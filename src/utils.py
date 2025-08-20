@@ -9,7 +9,7 @@ from datetime import timedelta
 
 DISTANCES_PATH: str = "src/resources/csv/distances.csv"
 ADDRESSES_PATH: str = "src/resources/csv/addresses.csv"
-DELIVERED_TRACKER = []
+DELIVERED_TRACKER: list = []
 
 
 # Opens csv, iterates through each line, inserts a Package Object into hashMap
@@ -146,21 +146,33 @@ def prime_trucks(truck: Truck, table: HashTable):
 def fill_truck(table: HashTable, truck: Truck):
     #sort_truck_packages(table, truck)
     all_on = True
-    count = 0
+    # count = 0
     while len(truck.packages) < truck.package_limit:
-        if len(truck.packages) > 0:
-            current_package = truck.packages[len(truck.packages)-1]
-            closest: Package = find_closest_load(current_package.delivery_address, truck.packages[len(truck.packages)-1], table.hashMap, truck)
-        else: 
-            closest: Package = find_closest_load(truck.hub_address, None, table.hashMap, truck)
-        if closest not in truck.packages and closest is not None:
-            truck.add_package(closest)
-            if closest not in DELIVERED_TRACKER:
-                DELIVERED_TRACKER.append(closest)
-        if closest is not None:
-            closest.assign_truck(truck)
-            closest.delayed_arrival()
-            continue
+        for package in table.hashMap:
+            if package.truck_id is None and len(truck.packages) < 16:
+                print(package.truck_id)
+                truck.add_package(package)
+            elif len(truck.packages) == 16:
+                break
+
+            
+            # else:
+            #     for packages in table.hashMap:
+            #         if packages.truck_id == None and len(truck.packages) < 16:
+            #             truck.add_package(packages)
+        # if len(truck.packages) > 0:
+        #     current_package = truck.packages[len(truck.packages)-1]
+        #     closest: Package = find_closest_load(current_package.delivery_address, truck.packages[len(truck.packages)-1], table.hashMap, truck)
+        # else: 
+        #     closest: Package = find_closest_load(truck.hub_address, None, table.hashMap, truck)
+        # if closest not in truck.packages and closest is not None:
+        #     truck.add_package(closest)
+        #     if closest not in DELIVERED_TRACKER:
+        #         DELIVERED_TRACKER.append(closest)
+        # if closest is not None:
+        #     closest.assign_truck(truck)
+        #     closest.delayed_arrival()
+        #     continue
         for package in table.hashMap:
             if package.on_truck == False and package in DELIVERED_TRACKER:
                 all_on = False
@@ -182,14 +194,22 @@ def fill_truck(table: HashTable, truck: Truck):
 # Replaces truck's packages list with a sorted packages list.
 # O(N^2) Complexity
 def sort_truck_packages(table: HashTable, truck: Truck):
-    sorted_packages: list = []
+    sorted_packages = []
     address = truck.hub_address
-    packages = truck.get_packages()
-    for package in packages:
-        current: Package = package
-        closest: Package = find_closest_filled(current.delivery_address, current, truck.packages)
+    truck_packages_left = truck.get_packages()
+    current_package: Package = None
+    #Gives 14
+    closest_to_hub: Package = find_closest_filled(address, truck_packages_left)
+    sorted_packages.append(truck_packages_left.pop(truck_packages_left.index(closest_to_hub)))
+    current_package = closest_to_hub
+
+    for package in truck_packages_left:
+        closest: Package = find_closest_filled(current_package.delivery_address, truck_packages_left)
+
         if closest not in sorted_packages:
-            sorted_packages.append(closest)
+            sorted_packages.append(truck_packages_left.pop(truck_packages_left.index(closest)))
+        current_package = closest
+
     truck.replace_with_sorted_package(sorted_packages)
 
 
@@ -216,18 +236,27 @@ def find_closest_load(current_address, current_package, packages, truck) -> Pack
     return closest_package
 
 
-def find_closest_filled(current_address, current_package, packages)-> Package:
+#find the closest package to the truck's location and return it. 
+def find_closest_filled(truck_location, packages) -> Package:
     closest_package: Package = None
     best_distance: float = None
     for package in packages:
-        addr = package.delivery_address
-        if addr == current_address and package != current_package:
+        # Evaluates the distance of each package against the truck location
+        # Value is measured against the current best_distance
+        dist = distance_between_addresses(package.delivery_address, truck_location)
+        # Prime the closest package with the first in the list, then begin evaluation
+        if closest_package == None:
             closest_package = package
-            return closest_package
-        dist = distance_between_addresses(addr, current_address)
-        if best_distance is None or dist <= best_distance:
+            best_distance = distance_between_addresses(truck_location, closest_package.delivery_address)
+
+        # If Duplicate address and a different package, return the package
+        if closest_package.delivery_address == truck_location and closest_package is not package:
+            return package
+
+        if best_distance is None or dist < best_distance:
             closest_package = package
             best_distance = dist
+
     return closest_package
 
 # Ingest hash table and trucks list. Checks if packages still need delivered.
