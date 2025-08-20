@@ -43,15 +43,6 @@ class Package:
     Loading Time: {self.loading_time}
     Delivery Status: {self.delivery_status}"""
 
-    # Sets the delivery status
-    # Complexity O(1)
-    def set_status(self, status):
-        if status == 1:
-            self.delivery_status = deliveryStatus.EN_ROUTE
-        elif status == 2:
-            self.delivery_status = deliveryStatus.DELIVERED
-        else:
-            self.delivery_status = deliveryStatus.AT_THE_HUB
     # True if there is a truck assigned, false if not.
     # Sets truck as true.
     # O(1) Complexity
@@ -61,6 +52,9 @@ class Package:
         else:
             self.on_truck = True
             return True
+    def assign_truck(self, truck):
+        self.on_truck = True
+        self.truck_id = truck.truck_id
     # Gets the required truck for the package, or returns none.
     # Complexity O(N)
     def required_truck(self):

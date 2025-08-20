@@ -27,30 +27,32 @@ class Truck:
     # Returns false if truck is full. Adds package to list.
     # O(1) Complexity
     def add_package(self, package: Package):
-        if len(self.packages) < self.package_limit:
+        if package is not None and len(self.packages) < self.package_limit:
             self.packages.append(package)
-            package.truck_id = self.truck_id
+            package.assign_truck(self)
 
     # Sets all the packages' delivery status to En Route
     # Stamps a loading time.
     # O(N) Complexity
     def set_en_route(self, HashTable: HashTable):
         for package in self.packages:
-            package.delivery_status = deliveryStatus.EN_ROUTE
-            package.loading_time = self.time
+            if package.delivery_status != deliveryStatus.DELIVERED:
+                package.delivery_status = deliveryStatus.EN_ROUTE
+                package.loading_time = self.time
 
     # Removes the package of the specified package_id from the list
     # Adds the mileage for the distance traveled to the total
     # Adds the trip duration to the Truck's total
     # O(1) Complexity
     def remove_package(self, package: Package, HashTable: HashTable, distance: float):
-        self.packages.remove(package)
         self.at_hub = False
         self.add_miles(distance)
         self.time += timedelta(minutes=self.add_time(distance, self.speed))
         self.mileage_times.append([self.distance_traveled, self.time])
-        package.delivery_status = deliveryStatus.DELIVERED
-        package.delivery_time = self.time
+        removed_package = self.packages.pop(self.packages.index(package))
+        removed_package.on_truck = False
+        removed_package.delivery_status = deliveryStatus.DELIVERED
+        removed_package.delivery_time = self.time
 
     # Adds miles and time back to hub
     # Sets truck at hub
