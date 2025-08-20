@@ -194,23 +194,24 @@ def fill_truck(table: HashTable, truck: Truck):
 # Replaces truck's packages list with a sorted packages list.
 # O(N^2) Complexity
 def sort_truck_packages(table: HashTable, truck: Truck):
-    sorted_packages = []
+    unsorted_packages: list = truck.packages[:]
+    sorted_packages: list = []
     address = truck.hub_address
-    truck_packages_left = truck.get_packages()
-    current_package: Package = None
-    #Gives 14
-    closest_to_hub: Package = find_closest_filled(address, truck_packages_left)
-    sorted_packages.append(truck_packages_left.pop(truck_packages_left.index(closest_to_hub)))
-    current_package = closest_to_hub
-
-    for package in truck_packages_left:
-        closest: Package = find_closest_filled(current_package.delivery_address, truck_packages_left)
-
-        if closest not in sorted_packages:
-            sorted_packages.append(truck_packages_left.pop(truck_packages_left.index(closest)))
-        current_package = closest
-
-    truck.replace_with_sorted_package(sorted_packages)
+    while len(sorted_packages) != len(truck.packages):
+        for package in table.hashMap:
+            current: Package = package
+            closest: Package = find_closest(address, current, unsorted_packages)
+            if closest in unsorted_packages:
+                sorted_packages.append(closest)
+                address = closest.delivery_address
+                unsorted_packages.remove(closest)
+        if len(unsorted_packages) == 0 and len(truck.packages) == len(sorted_packages):
+            truck.packages = sorted_packages
+        else:
+            print("Failure")
+            print(f"Sorted: {len(sorted_packages)}")
+            print(f"Unsorted: {len(unsorted_packages)}")
+            print(f"Truck: {len(truck.packages)}")
 
 
 # Finds out the cloests package within a list of packages and returns it.
@@ -264,49 +265,25 @@ def find_closest_filled(truck_location, packages) -> Package:
 # Increments distance traveled, Returns Trucks to hub, and loads them back up.
 # O(N^5) Complexity
 def deliver_packages(table: HashTable, trucks: list):
-    # curr_add = truck.hub_address
-    for truck in trucks:
-        truck.set_en_route(table)
-        curr_add = truck.hub_address
-        for package in truck.packages:
-            package.delivery_status = deliveryStatus.DELIVERED
-            curr_add = package.delivery_address
-            truck.remove_package(
-                                package,
-                                table, 
-                                distance_between_addresses(curr_add, package.delivery_address))
-            truck.current_address = curr_add
-
-
-    for item in table.hashMap:
-        if item.delivery_status == deliveryStatus.DELIVERED:
-            retry_deliver_packages(table, trucks)
-def retry_deliver_packages(table: HashTable, trucks: list):
-    # curr_add = truck.hub_address
-    
-    for truck in trucks:
-        fill_truck(table, truck)
-        curr_add = truck.current_address
-        for package in truck.packages:
-            package.delivery_status = deliveryStatus.DELIVERED
-            truck.remove_package(
-                                package,
-                                table, 
-                                distance_between_addresses(curr_add, package.delivery_address))
-            curr_add = package.delivery_address
-            truck.current_address = curr_add
-    for item in table.hashMap:
-        if item.delivery_status != deliveryStatus.DELIVERED:
-            print(item)
-            retry_deliver_packages(table, trucks)
-                            
+    while deliveries_completed(trucks) is False:
+        for truck in trucks:
+            truck.set_en_route(table)
+            curr_add = truck.hub_address
+            while len(truck.packages) > 0:
+                for package in truck.packages:
+                    package.delivery_status = deliveryStatus.DELIVERED
+                    truck.remove_package(
+                                    package,
+                                    table, 
+                                    distance_between_addresses(curr_add, package.delivery_address))
+                    curr_add = package.delivery_address
+                    truck.current_address = curr_add
+            # truck.return_truck(distance_between_addresses(curr_add, truck.hub_address))                    
 # Iterates through hashmap to see if any packages still need to be delivered.
 # O(N) Complexity
-def deliveries_completed(table: HashTable) -> bool:
-    package: Package
-    for package in table.hashMap:
-        if package is not None and package.delivery_status != deliveryStatus.DELIVERED:
-            print("WHY AM I HERE?")
+def deliveries_completed(trucks: list) -> bool:
+    for truck in trucks:
+        if len(truck.packages) != 0:
             return False
     return True
 def directly_associated(table: HashTable, package: Package) -> list:
