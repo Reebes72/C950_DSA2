@@ -30,23 +30,20 @@ class Truck:
         if len(self.packages) < self.package_limit:
             self.packages.append(package)
             package.truck_id = self.truck_id
-        else:
-            return False
 
     # Sets all the packages' delivery status to En Route
     # Stamps a loading time.
     # O(N) Complexity
     def set_en_route(self, HashTable: HashTable):
-        for id in self.packages:
-                id.delivery_status = deliveryStatus.EN_ROUTE
-                id.loading_time = self.time
+        for package in self.packages:
+            package.delivery_status = deliveryStatus.EN_ROUTE
+            package.loading_time = self.time
 
     # Removes the package of the specified package_id from the list
     # Adds the mileage for the distance traveled to the total
     # Adds the trip duration to the Truck's total
     # O(1) Complexity
-    def remove_package(self, id: Package, HashTable: HashTable, distance: float):
-        package: Package = HashTable.hashSearch(id.package_id)
+    def remove_package(self, package: Package, HashTable: HashTable, distance: float):
         self.packages.remove(package)
         self.at_hub = False
         self.add_miles(distance)
@@ -67,8 +64,15 @@ class Truck:
 
     # Returns list of Package objects using List Comprehension
     # O(N) Complexity
-    def get_packages(self, HashTable: HashTable):
+    def get_packages(self):
         return self.packages
+    
+    def get_package_ids(self):
+        packages = self.get_packages()
+        ids: list = []
+        for i in packages:
+            ids.append(i.package_id)
+        return ids
 
     # Utility function for timedelta() objects
     # O(1) Complexity
@@ -87,3 +91,6 @@ class Truck:
             return True
         else:
             return False
+
+    def replace_with_sorted_package(self, sorted_packages: list):
+        self.packages = sorted_packages

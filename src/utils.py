@@ -91,7 +91,7 @@ def prime_trucks(truck: Truck, table: HashTable):
     delivered_together: list = []
     for package in table.hashMap:
         if package.notes == "":
-            pass
+            continue
         if package.package_id == 9:
             package.delivery_address = "410 S State St"
             package.city = "Salt Lake City"
@@ -222,7 +222,7 @@ def fill_truck(table: HashTable, truck: Truck):
 def sort_truck_packages(table: HashTable, truck: Truck):
     sorted_packages: list = []
     address = truck.hub_address
-    packages = truck.get_packages(table)
+    packages = truck.get_packages()
     # while len(packages) != 0:
     #     closest: Package = find_closest(address, packages)
     #     sorted_packages.append(closest)
@@ -232,6 +232,8 @@ def sort_truck_packages(table: HashTable, truck: Truck):
     for package in packages:
         current: Package = package
         closest: Package = find_closest(address, current, packages)
+        sorted_packages.append(closest)
+    truck.replace_with_sorted_package(sorted_packages)
 
 
 # Finds out the cloests package within a list of packages and returns it.
@@ -272,19 +274,50 @@ def find_closest(address, current_package, packages) -> Package:
 # Increments distance traveled, Returns Trucks to hub, and loads them back up.
 # O(N^5) Complexity
 def deliver_packages(table: HashTable, trucks: list):
-    while deliveries_completed(table) is False:
-        for truck in trucks:
-            truck.set_en_route(table)
-            curr_add = truck.hub_address
-            while len(truck.packages) > 0:
-                for package in truck.packages:
-                    package.delivery_status = deliveryStatus.DELIVERED
-                    truck.remove_package(
-                                    package,
-                                    table, 
-                                    distance_between_addresses(curr_add, package.delivery_address))
-                    curr_add = package.delivery_address
-                    truck.current_address = curr_add
+    # curr_add = truck.hub_address
+    for truck in trucks:
+        truck.set_en_route(table)
+        curr_add = truck.hub_address
+        for package in truck.packages:
+            package.delivery_status = deliveryStatus.DELIVERED
+            truck.remove_package(
+                                package,
+                                table, 
+                                distance_between_addresses(curr_add, package.delivery_address))
+            curr_add = package.delivery_address
+            truck.current_address = curr_add
+    for item in table.hashMap:
+        if item.delivery_status == deliveryStatus.DELIVERED:
+            retry_deliver_packages(table, trucks)
+def retry_deliver_packages(table: HashTable, trucks: list):
+    # curr_add = truck.hub_address
+    for truck in trucks:
+        truck.set_en_route(table)
+        curr_add = truck.current_address
+        for package in truck.packages:
+            package.delivery_status = deliveryStatus.DELIVERED
+            truck.remove_package(
+                                package,
+                                table, 
+                                distance_between_addresses(curr_add, package.delivery_address))
+            curr_add = package.delivery_address
+            truck.current_address = curr_add
+    for item in table.hashMap:
+        if item.delivery_status != deliveryStatus.DELIVERED:
+            print(item)
+            retry_deliver_packages(table, trucks)
+            
+
+        # while deliveries_completed(table) is False:
+        #     while len(truck.packages) > 0:
+        #         for package in truck.packages:
+        #             package.delivery_status = deliveryStatus.DELIVERED
+        #             truck.remove_package(
+        #                             package,
+        #                             table, 
+        #                             distance_between_addresses(curr_add, package.delivery_address))
+        #             curr_add = package.delivery_address
+        #             truck.current_address = curr_add
             # truck.return_truck(distance_between_addresses(curr_add, truck.hub_address))                    
 # Iterates through hashmap to see if any packages still need to be delivered.
 # O(N) Complexity
