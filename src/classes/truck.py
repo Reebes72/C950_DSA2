@@ -67,7 +67,7 @@ class Truck:
     
 
     # Returns list of Package objects using List Comprehension
-    # O(N) Complexity
+    # O(1) Complexity
     def get_packages(self):
         return self.packages
 

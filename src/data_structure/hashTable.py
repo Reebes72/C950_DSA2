@@ -9,7 +9,7 @@ class HashTable:
         self.resizing2 = high
 
     # Hash Package ID w Modulus by size of hashMap to avoid collisions
-    #
+    # Complexity of O(N)
     def hashInsert(self, package: Package):
         i = 0
         buckets_probed = 0
@@ -27,6 +27,8 @@ class HashTable:
         self.insert(package)
         return True
 
+    # Supply a Package ID, gets the hashed value, and returns the package or none.
+    # Complexity O(1)
     def hashSearch(self, key):
         i = 0
         buckets_probed = 0
@@ -39,7 +41,8 @@ class HashTable:
             bucket = (hash(key) + self.resizing1 * i + self.resizing2 * i ** 2) % N
             buckets_probed = buckets_probed + 1
         return None
-
+    # Creates a new hashMap with double the previous capacity, and inserts the old packages into the new hashMap
+    # Complexity O(N)
     def resize(self):
         resized_ht = HashTable(capacity=self.capacity * 2, resizing1=self.resizing1, resizing2=self.resizing2)
         for package in self.hashMap:

@@ -87,8 +87,10 @@ def distance_between_addresses(add1: str, add2: str) -> float:
     distance = DISTANCES[ADDRESSES.index(add1)][ADDRESSES.index(add2)]
     if distance == '':
         distance = DISTANCES[ADDRESSES.index(add2)][ADDRESSES.index(add1)]
-
     return float(distance)
+
+# Supply an address and a list of packages to iterate through. Return the distances the list of packages are from the address.
+# O(N) Complexity
 def get_distances(address, table):
     address_distances: list = []
     for package in table:
@@ -97,6 +99,8 @@ def get_distances(address, table):
         
         
 # Look at each package's notes, and group packages by those that should be delivered together
+# Manual Assignment to trucks 1,2,3 (delivered together, required truck, and delayed)
+# O(N^2) Complexity
 def prime_trucks(truck: Truck, table: HashTable):
     package: Package
     delivered_together: list = []
@@ -122,18 +126,14 @@ def prime_trucks(truck: Truck, table: HashTable):
                     package.truck_id = truck.truck_id
                     truck.add_package(package)
                     package.truck_assigned()
+        # Delayed packages are set to truck 3
         elif "Delayed" in package.notes.split():
-            delayed_until: list = [trk for trk in package.notes if trk.isdigit()]
-            if len(delayed_until) == 4:
-                time: timedelta = timedelta(hours=int(delayed_until[0] + delayed_until[1]), minutes=int(delayed_until[2] + delayed_until[3]))
-            else:
-                time: timedelta = timedelta(hours=int(delayed_until[0]), minutes=int(delayed_until[1] + delayed_until[2]))
             if truck.truck_id == 3 and package.truck_id is None:
                 package.truck_id = truck.truck_id
                 truck.add_package(package)
                 package.truck_assigned()
                 package.delayed_arrival()
-    # Adds any packages with same address to the same truck
+    # Adds any packages with same address to the same truck for efficiency
     for package in table.hashMap:
         for pack in truck.packages:
             if package.delivery_address == pack.delivery_address and package.package_id != pack.package_id:
@@ -141,11 +141,15 @@ def prime_trucks(truck: Truck, table: HashTable):
                 truck.add_package(package)
                 package.truck_assigned()
                 package.delayed_arrival()
+    # Checks for possibility of a package being added multiple times
     for package in truck.packages:
         if truck.packages.count(package) > 1:
             pack = truck.packages.pop(truck.packages.index(package))
 
-
+# Gets the truck's packages and looks to see which packages haven't been assigned to a truck yet, fills the truck with packages.
+# NOTE: Improvements on mileage could be made here by doing a distance search on the best package of available packages
+# NOTE: It would increase processing time to do so, likely from O(N) to O(N^2) Complexity
+# Complexity O(N)
 def fill_truck(table: HashTable, truck: Truck):
     packages_left: list = get_after_prime_packages(table)
     #Tested sort here. Worked fine
@@ -153,23 +157,16 @@ def fill_truck(table: HashTable, truck: Truck):
         for package in packages_left:
             if package.truck_id == None:
                 #Added logic in truck to add the truck_id to the package.
+                # Logic in Trucks.py to prevent packages from exceeding the limit.
                 truck.add_package(package)
                 packages_left.remove(package)
     sort_truck_packages(truck.packages, truck)
-    ids = []
-    for p in truck.packages:
-        ids.append(p.package_id)
-    print(ids)
-    ids.clear()
-    sort_truck_packages(truck.packages, truck) 
-    for p in truck.packages:
-        ids.append(p.package_id)
-    print(ids)
     # Thought... Maybe you could have it add only one closest package, and send a False value if it's not full.
     # Loop until filled or packages_left is empty and return True.
 
 
 # Returns the packages that haven't been assigned to a truck yet after priming.  
+# Complexity O(N)
 def get_after_prime_packages(table: HashTable):
     packages_left: list = []
     for package in table.hashMap:
@@ -177,25 +174,11 @@ def get_after_prime_packages(table: HashTable):
             packages_left.append(package)
     return packages_left
 
-#TODO Idea to grab the three closest packages the hub and add 1 of them to each truck
-#TODO 
-def triple_sort(trucks: list, table: HashTable):
-    packages_left: list = []
-    for package in table.hashMap:
-        if package.truck_id == None:
-            packages_left. append(package)
-    truck_1: Truck = trucks[0]
-    truck_2: list = []
-    truck_3: list = []
-    for package in packages_left:
-        find_closest()
-
 # iterates through truck's Packages, finds the nearest stop relative to current
 # hub_address, adds to sorted packages list, updates address, and removes the added package
 # Replaces truck's packages list with a sorted packages list.
 # O(N^2) Complexity
 def sort_truck_packages(table, truck: Truck):
-    # NEED TO TEST THAT THIS IS NOT A PALINDROME CHECKER LOL
     unsorted_packages: list = truck.packages.copy()
     sorted_packages: list = []
     address = truck.hub_address
@@ -252,12 +235,12 @@ def deliver_packages(table: HashTable, trucks: list):
             while len(truck.packages) > 0:
                 for package in truck_packages:
                     package.delivery_status = deliveryStatus.DELIVERED
-                    print(f"""!!!!!!!!!!!!!!DELIVERY INFO!!!!!!!!!!!!!!!!!
-                              Package ID:        {package.package_id}
-                              Delivery Location: {package.delivery_address}
-                              Truck Location:    {curr_add}
-                              Distance Recorded: {distance_between_addresses(curr_add, package.delivery_address)}
-                              !!!!!!!!!!!!!!DELIVERY INFO!!!!!!!!!!!!!!!!!""")
+                    # print(f"""!!!!!!!!!!!!!!DELIVERY INFO!!!!!!!!!!!!!!!!!
+                    #           Package ID:        {package.package_id}
+                    #           Delivery Location: {package.delivery_address}
+                    #           Truck Location:    {curr_add}
+                    #           Distance Recorded: {distance_between_addresses(curr_add, package.delivery_address)}
+                    #           !!!!!!!!!!!!!!DELIVERY INFO!!!!!!!!!!!!!!!!!""")
                     truck.remove_package(
                                     package,
                                     table, 
@@ -275,6 +258,8 @@ def deliver_packages(table: HashTable, trucks: list):
                 #     print("!!!!!!!!!!!!!!!!!!!!RETURNING TRUCK!!!!!!!!!!!!!!!!")
                 # truck.return_truck(distance_between_addresses('2600 Taylorsville Blvd', truck.hub_address))                        
 # Iterates through hashmap to see if any packages still need to be delivered.
+
+# Checks to see if the list of trucks have any packages left to deliver.
 # O(N) Complexity
 def deliveries_completed(trucks: list) -> bool:
     for truck in trucks:

@@ -82,3 +82,16 @@ def directly_associated(table: HashTable, package: Package) -> list:
                     if add not in associated:
                         associated.append(add)
         return associated
+    
+#TODO Idea to grab the three closest packages the hub and add 1 of them to each truck
+#TODO 
+def triple_sort(trucks: list, table: HashTable):
+    packages_left: list = []
+    for package in table.hashMap:
+        if package.truck_id == None:
+            packages_left. append(package)
+    truck_1: Truck = trucks[0]
+    truck_2: list = []
+    truck_3: list = []
+    for package in packages_left:
+        find_closest()

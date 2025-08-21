@@ -75,10 +75,13 @@ class Package:
             return True
         else:
             return True
-    
+
+    # Supply a truck_id, assigns it to the package, and sets on_truck to true
+    # O(1) Complexity
     def assign_truck(self, truck_id):
         self.truck_id = truck_id
         self.on_truck = True
+
     # Gets the required truck for the package, or returns none.
     # Complexity O(N)
     def required_truck(self):
@@ -86,6 +89,7 @@ class Package:
             id = [int(index) for index in self.notes.split() if index.isdigit()][0]
             return id
         return None
+
     # Checks notes for wrong address or delayed.
     # splits string to get time, converts to timedelta and returns
     # O(1) Complextity
@@ -101,6 +105,7 @@ class Package:
             delta = timedelta(hours=10, minutes=20)
             return delta
         return None
+
     # Checks for deadline, gets timestampe and returns timedelta
     # Complexity O(1)
     def get_deadline(self):
