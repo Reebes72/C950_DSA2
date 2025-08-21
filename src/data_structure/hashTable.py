@@ -8,6 +8,8 @@ class HashTable:
         self.resizing1 = low
         self.resizing2 = high
 
+    # Hash Package ID w Modulus by size of hashMap to avoid collisions
+    #
     def hashInsert(self, package: Package):
         i = 0
         buckets_probed = 0

@@ -22,37 +22,27 @@ DRIVERS: int = 2
 
 def main():
     trucks, drivers = utils.initialize_trucks_drivers(TRUCKS, DRIVERS)
+    # Gets the latest start times for all packages and sets last truck to start at that time.
     delayed_start = None
-    package: Package
     for package in PACKAGES.hashMap:
         if package is not None and package.delayed_arrival() is not None:
             if delayed_start is None or delayed_start > package.delayed_arrival():
                 delayed_start = package.delayed_arrival()
     if len(trucks) > 1:
         trucks[len(trucks) - 1].time = delayed_start
-    # for truck in trucks:
-    #     utils.prime_trucks(truck, PACKAGES)
-    #     packages = [i.package_id for i in truck.packages]
-    #     # print(packages)
-    # utils.fill_truck(PACKAGES, trucks[0])
-    # # for package in trucks[0].packages:
-    # #     print(package)
-    # # print("BREAK")
-    # utils.fill_truck(PACKAGES, trucks[2])
-    # # for package in trucks[2].packages:
-    # #     print(package)
-    # # print("BREAK")
-    # utils.fill_truck(PACKAGES, trucks[1])
-    # for package in trucks[1].packages:
-    #     print(package)
-    # print("BREAK")
 
+    #Packages that should be delivered together.
     for truck in trucks:
         utils.prime_trucks(truck, PACKAGES)
-        utils.fill_truck(PACKAGES, truck)
+    #Finishes loading up the rest of the packages
     for truck in trucks:
-        utils.sort_truck_packages(PACKAGES, truck)
+        utils.fill_truck(PACKAGES, truck)
+    #Sorts the Packages on the truck
+    for truck in trucks:
+        utils.sort_truck_packages(PACKAGES.hashMap, truck)
+    #Delivers all packages, and calculates times, miles, distances
     utils.deliver_packages(PACKAGES, trucks)
+    #UI Output of Results
     cli.main_menu(PACKAGES, trucks)
 
 

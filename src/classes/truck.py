@@ -29,7 +29,8 @@ class Truck:
     def add_package(self, package: Package):
         if len(self.packages) < self.package_limit:
             self.packages.append(package)
-            package.truck_id = self.truck_id
+            package.assign_truck(self.truck_id)
+            return package.truck_assigned()
         else:
             return False
 
@@ -67,7 +68,7 @@ class Truck:
 
     # Returns list of Package objects using List Comprehension
     # O(N) Complexity
-    def get_packages(self, HashTable: HashTable):
+    def get_packages(self):
         return self.packages
 
     # Utility function for timedelta() objects

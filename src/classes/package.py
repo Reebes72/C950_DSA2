@@ -68,11 +68,17 @@ class Package:
     # Sets truck as true.
     # O(1) Complexity
     def truck_assigned(self) -> bool:
-        if self.truck_id is None:
+        if self.truck_id is None and self.on_truck is False:
             return False
-        else:
+        elif self.truck_id is not None and self.on_truck is False:
             self.on_truck = True
             return True
+        else:
+            return True
+    
+    def assign_truck(self, truck_id):
+        self.truck_id = truck_id
+        self.on_truck = True
     # Gets the required truck for the package, or returns none.
     # Complexity O(N)
     def required_truck(self):
