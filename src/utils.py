@@ -101,15 +101,16 @@ def get_distances(address, table):
 # Look at each package's notes, and group packages by those that should be delivered together
 # Manual Assignment to trucks 1,2,3 (delivered together, required truck, and delayed)
 # O(N^2) Complexity
-def prime_trucks(truck: Truck, table: HashTable):
+def prime_trucks(truck: Truck, table: list):
+    table_copy = table.copy()
     package: Package
     delivered_together: list = []
-    for package in table.hashMap:
-        if package.notes == "":
-            pass
+    for package in table_copy:
+        # if package.notes == "":
+        #     pass
         # Checks for "Must be delivered with" in notes
         # Assigns to first truck
-        elif "Must" in package.notes.split():
+        if "Must" in package.notes.split() or package.package_id == 29 or package.package_id == 13 or package.package_id == 15 or package.package_id == 19:
             note: str = package.notes.replace(',', '')
             delivered_together = [trk for trk in note.split() if trk.isdigit()]
             for together in delivered_together:
@@ -117,15 +118,25 @@ def prime_trucks(truck: Truck, table: HashTable):
                     package.truck_id = truck.truck_id
                     truck.add_package(package)
                     package.truck_assigned()
+            if package.notes == "" and package.truck_id is None:
+                package.truck_id = truck.truck_id
+                truck.add_package(package)
+                package.truck_assigned()
         # Checks for "Can only be delivered on specific truck" in notes
         # Assigns to Truck 2
-        elif "Can" in package.notes.split():
+        elif "Can" in package.notes.split() or package.package_id == 6:
             required_truck = [trk for trk in package.notes if trk.isdigit()]
-            for req in required_truck:
-                if int(req) == truck.truck_id and truck.full() is False and package.truck_id is None:
-                    package.truck_id = truck.truck_id
-                    truck.add_package(package)
-                    package.truck_assigned()
+            if package.package_id != 6:
+                for req in required_truck:
+                    if int(req) == truck.truck_id and truck.full() is False and package.truck_id is None:
+                        package.truck_id = truck.truck_id
+                        truck.add_package(package)
+                        package.truck_assigned()
+            elif truck.truck_id == 2:
+                package.truck_id = truck.truck_id
+                truck.add_package(package)
+                package.truck_assigned()
+            
         # Delayed packages are set to truck 3
         elif "Delayed" in package.notes.split():
             if truck.truck_id == 3 and package.truck_id is None:
@@ -142,9 +153,9 @@ def prime_trucks(truck: Truck, table: HashTable):
                 package.state = "UT"
                 package.zip_code = "84111"
     # Adds any packages with same address to the same truck for efficiency
-    for package in table.hashMap:
+    for package in table:
         for pack in truck.packages:
-            if package.delivery_address == pack.delivery_address and package.package_id != pack.package_id:
+            if package.delivery_address == pack.delivery_address and package.package_id != pack.package_id and 'EOD' in pack.deadline and 'EOD' in package.deadline and package.truck_id is None:
                 package.truck_id = truck.truck_id
                 truck.add_package(package)
                 package.truck_assigned()
@@ -157,10 +168,13 @@ def prime_trucks(truck: Truck, table: HashTable):
 
 def fill_trucks_with_deadline(table: list):
     packages_left: list = get_after_prime_packages(table)
+    packages_left_copy = packages_left.copy()
     test = []
-    for package in packages_left:
-        if package.deadline == "EOD":
+    for package in packages_left_copy:
+        if 'EOD' in package.deadline:
             packages_left.remove(package)
+            # print(package)
+            # print(len(packages_left))
     packages_split: int = len(packages_left)/2
     truck_1_packages = packages_left[:int(packages_split)]
     packages_split += 1
@@ -174,9 +188,9 @@ def return_eod_deadline_arrays(truck_packages):
     eod: list= []
     deadline: list= []
     for p in truck_packages:
-        if p.deadline == "EOD":
+        if 'EOD' in p.deadline:
             eod.append(p)
-        if p.deadline != "EOD":
+        if 'EOD' not in p.deadline:
             deadline.append(p)
     return eod, deadline
 # Gets the truck's packages and looks to see which packages haven't been assigned to a truck yet, fills the truck with packages.
@@ -226,9 +240,10 @@ def sort_truck_packages(table, truck: Truck):
     eod, deadline = return_eod_deadline_arrays(unsorted_packages)
     deadline_copy = deadline.copy()
     address = truck.hub_address
+    current: Package = None
     while len(deadline) > 0:
         for p in deadline_copy:
-            current: Package = p
+            current = p
             closest: Package = find_closest(address, current, deadline)
             if closest in deadline:
                 sorted_packages.append(closest)
@@ -237,12 +252,13 @@ def sort_truck_packages(table, truck: Truck):
                 deadline.remove(closest)
     while len(sorted_packages) != len(truck.packages):
         for package in unsorted_packages:
-            current: Package = package
+            # current = package
             closest: Package = find_closest(address, current, unsorted_packages)
             if closest in unsorted_packages:
                 sorted_packages.append(closest)
                 address = closest.delivery_address
                 unsorted_packages.remove(closest)
+            current = package
         if len(unsorted_packages) == 0 and len(truck.packages) == len(sorted_packages):
             truck.packages = sorted_packages[:]
             return sorted_packages

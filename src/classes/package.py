@@ -24,36 +24,38 @@ class Package:
     # String Representation of Package
     def __str__(self):
         nl = "\n"
-    #     return f"""
-    # Package ID: {self.package_id}
-    # Address: {self.delivery_address}, {self.city}, {self.state}, {self.zip_code}
-    # Weight: {self.package_weight}
-    # Truck ID: {self.truck_id}
-    # Delivery Time: {self.delivery_time}
-    # Loading Time: {self.loading_time}
-    # Delivery Status: {self.delivery_status}"""
         return f"""
-    
     Package ID: {self.package_id}
     Address: {self.delivery_address}, {self.city}, {self.state}, {self.zip_code}
+    Weight: {self.package_weight}
     Truck ID: {self.truck_id}
-    """
+    Deadline: {self.deadline}
+    Delivery Time: {self.delivery_time}
+    Loading Time: {self.loading_time}
+    Delivery Status: {self.delivery_status}"""
+        # return f"""
+    
+    # Package ID: {self.package_id}
+    # Address: {self.delivery_address}, {self.city}, {self.state}, {self.zip_code}
+    # Truck ID: {self.truck_id}
+    # """
     # String Representation of Package
     def __repr__(self):
         nl = "\n"
-        return f"""
+    #     return f"""
     
-    Package ID: {self.package_id}
-    Address: {self.delivery_address}, {self.city}, {self.state}, {self.zip_code}
-    Truck ID: {self.truck_id}
-    """
-    #     return f"""    Package: {self.package_id}
-    # Address: {self.delivery_address}, {self.city}, {self.zip_code}
-    # Weight: {self.package_weight}
+    # Package ID: {self.package_id}
+    # Address: {self.delivery_address}, {self.city}, {self.state}, {self.zip_code}
     # Truck ID: {self.truck_id}
-    # Delivery Time: {self.delivery_time}
-    # Loading Time: {self.loading_time}
-    # Delivery Status: {self.delivery_status}"""
+    # """
+        return f"""    Package: {self.package_id}
+    Address: {self.delivery_address}, {self.city}, {self.zip_code}
+    Weight: {self.package_weight}
+    Truck ID: {self.truck_id}
+    Deadline: {self.deadline}
+    Delivery Time: {self.delivery_time}
+    Loading Time: {self.loading_time}
+    Delivery Status: {self.delivery_status}"""
 
     # Sets the delivery status
     # Complexity O(1)
