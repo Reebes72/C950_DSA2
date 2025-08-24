@@ -1,5 +1,5 @@
 # ANDREW REEVES - ID# 011598549
-from data_structure.HashTable import HashTable
+from data_structure.hashTable import HashTable
 from classes.truck import Truck
 from classes.package import Package
 

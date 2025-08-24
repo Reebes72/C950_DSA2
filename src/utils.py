@@ -1,6 +1,6 @@
 import csv
 
-from data_structure.HashTable import HashTable
+from data_structure.hashTable import HashTable
 from classes.package import Package
 from classes.truck import Truck
 from classes.driver import Driver
@@ -133,6 +133,14 @@ def prime_trucks(truck: Truck, table: HashTable):
                 truck.add_package(package)
                 package.truck_assigned()
                 package.delayed_arrival()
+        elif "Wrong" in package.notes.split() and package.package_id == 9:
+            if truck.truck_id == 3 and package.truck_id is None:
+                package.truck_id = truck.truck_id
+                truck.add_package(package)
+                package.delivery_address = "410 S State St"
+                package.city = "Salt Lake City"
+                package.state = "UT"
+                package.zip_code = "84111"
     # Adds any packages with same address to the same truck for efficiency
     for package in table.hashMap:
         for pack in truck.packages:

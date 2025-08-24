@@ -1,6 +1,6 @@
 from datetime import timedelta
 from classes.package import Package
-from data_structure.HashTable import HashTable
+from data_structure.hashTable import HashTable
 from classes.deliveryStatus import deliveryStatus
 
 

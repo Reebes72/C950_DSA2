@@ -98,6 +98,7 @@ class Package:
             time: str = self.notes.split("until ")[1]
             try:
                 stamp = datetime.strptime(time, "%H:%M")
+                self.delivery_status = deliveryStatus.DELAYED
                 return timedelta(hours=stamp.hour, minutes=stamp.minute)
             except:
                 pass

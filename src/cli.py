@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from data_structure.HashTable import HashTable
+from data_structure.hashTable import HashTable
 from classes.package import Package
 
 def main_menu(table: HashTable, trucks: list):
