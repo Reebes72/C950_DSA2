@@ -21,39 +21,42 @@ class Package:
         self.loading_time: datetime = None
         self.truck_id: int = None
         self.on_truck: bool = False
+        self.delayed_arrival()
     # String Representation of Package
     def __str__(self):
         nl = "\n"
-    #     return f"""
-    # Package ID: {self.package_id}
-    # Address: {self.delivery_address}, {self.city}, {self.state}, {self.zip_code}
-    # Weight: {self.package_weight}
-    # Truck ID: {self.truck_id}
-    # Delivery Time: {self.delivery_time}
-    # Loading Time: {self.loading_time}
-    # Delivery Status: {self.delivery_status}"""
         return f"""
-    
     Package ID: {self.package_id}
     Address: {self.delivery_address}, {self.city}, {self.state}, {self.zip_code}
+    Weight: {self.package_weight}
     Truck ID: {self.truck_id}
-    """
+    Deadline: {self.deadline}
+    Delivery Time: {self.delivery_time}
+    Loading Time: {self.loading_time}
+    Delivery Status: {self.delivery_status}"""
+        # return f"""
+    
+    # Package ID: {self.package_id}
+    # Address: {self.delivery_address}, {self.city}, {self.state}, {self.zip_code}
+    # Truck ID: {self.truck_id}
+    # """
     # String Representation of Package
     def __repr__(self):
         nl = "\n"
-        return f"""
+    #     return f"""
     
-    Package ID: {self.package_id}
-    Address: {self.delivery_address}, {self.city}, {self.state}, {self.zip_code}
-    Truck ID: {self.truck_id}
-    """
-    #     return f"""    Package: {self.package_id}
-    # Address: {self.delivery_address}, {self.city}, {self.zip_code}
-    # Weight: {self.package_weight}
+    # Package ID: {self.package_id}
+    # Address: {self.delivery_address}, {self.city}, {self.state}, {self.zip_code}
     # Truck ID: {self.truck_id}
-    # Delivery Time: {self.delivery_time}
-    # Loading Time: {self.loading_time}
-    # Delivery Status: {self.delivery_status}"""
+    # """
+        return f"""    Package: {self.package_id}
+    Address: {self.delivery_address}, {self.city}, {self.zip_code}
+    Weight: {self.package_weight}
+    Truck ID: {self.truck_id}
+    Deadline: {self.deadline}
+    Delivery Time: {self.delivery_time}
+    Loading Time: {self.loading_time}
+    Delivery Status: {self.delivery_status}"""
 
     # Sets the delivery status
     # Complexity O(1)
@@ -94,13 +97,12 @@ class Package:
     # splits string to get time, converts to timedelta and returns
     # O(1) Complextity
     def delayed_arrival(self):
-        if "Delayed on flight---will not arrive to depot until" in self.notes:
+        if self.notes.find('Delayed') != -1:
             time: str = self.notes.split("until ")[1]
-            try:
-                stamp = datetime.strptime(time, "%H:%M")
-                return timedelta(hours=stamp.hour, minutes=stamp.minute)
-            except:
-                pass
+            time = time.split()[0]
+            stamp = datetime.strptime(time, "%H:%M")
+            self.delivery_status = deliveryStatus.DELAYED
+            return timedelta(hours=stamp.hour, minutes=stamp.minute)
         if "Wrong address listed" in self.notes:
             delta = timedelta(hours=10, minutes=20)
             return delta

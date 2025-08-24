@@ -1,6 +1,6 @@
 from datetime import timedelta
 from classes.package import Package
-from data_structure.HashTable import HashTable
+from data_structure.hashTable import HashTable
 from classes.deliveryStatus import deliveryStatus
 
 
@@ -48,7 +48,8 @@ class Truck:
     # O(1) Complexity
     def remove_package(self, id: Package, HashTable: HashTable, distance: float):
         package: Package = HashTable.hashSearch(id.package_id)
-        self.packages.remove(package)
+        if package in self.packages:
+            self.packages.remove(package)
         self.at_hub = False
         self.add_miles(distance)
         self.time += timedelta(minutes=self.add_time(distance, self.speed))

@@ -1,7 +1,8 @@
 # ANDREW REEVES - ID# 011598549
-from data_structure.HashTable import HashTable
+from data_structure.hashTable import HashTable
 from classes.truck import Truck
 from classes.package import Package
+from datetime import timedelta
 
 import utils
 import cli
@@ -30,13 +31,21 @@ def main():
                 delayed_start = package.delayed_arrival()
     if len(trucks) > 1:
         trucks[len(trucks) - 1].time = delayed_start
+        trucks[1].time = timedelta(hours=9, minutes=5)
 
     #Packages that should be delivered together.
+    test = []
     for truck in trucks:
-        utils.prime_trucks(truck, PACKAGES)
+        utils.prime_trucks(truck, PACKAGES.hashMap)
+        for pack in truck.packages:
+            test.append(pack.package_id)
+        print(test)
+        test.clear()
+            
     #Finishes loading up the rest of the packages
+    utils.fill_trucks_with_deadline(PACKAGES.hashMap)
     for truck in trucks:
-        utils.fill_truck(PACKAGES, truck)
+        utils.fill_truck(PACKAGES.hashMap, truck)
     #Sorts the Packages on the truck
     for truck in trucks:
         utils.sort_truck_packages(PACKAGES.hashMap, truck)
