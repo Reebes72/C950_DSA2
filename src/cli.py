@@ -89,6 +89,7 @@ def display_query(table: HashTable, package_id: int, report_time: datetime):
     package_info += "\n\tZIP Code: " + package.zip_code
     package_info += "\n\tPackage Weight: " + str(package.package_weight) + " kilograms"
     package_info += "\n\tDelivery Deadline: " + package.deadline
+    package_info += "\n\tTruck ID: " + str(package.truck_id)
     print(package_info)
 
 
