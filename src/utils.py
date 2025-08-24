@@ -154,6 +154,25 @@ def prime_trucks(truck: Truck, table: HashTable):
         if truck.packages.count(package) > 1:
             pack = truck.packages.pop(truck.packages.index(package))
 
+
+def fill_trucks_with_deadline(truck: Truck, table: list):
+    packages_left: list = get_after_prime_packages(table)
+    for package in packages_left:
+        if package.deadline == "EOD":
+            packages_left.remove(package)
+    packages_split: int = len(packages_left)/2-1
+    truck_1_packages = packages_left[:int(packages_split)]
+    packages_split += 1
+    truck_2_packages = packages_left[int(packages_split):]
+    # Test function
+    test_array = []
+    for t in truck_1_packages:
+        test_array.append(t.package_id)
+    print(test_array)
+    test_array.clear()
+    for t in truck_2_packages:
+        test_array.append(t.package_id)
+    print(test_array)        
 # Gets the truck's packages and looks to see which packages haven't been assigned to a truck yet, fills the truck with packages.
 # NOTE: Improvements on mileage could be made here by doing a distance search on the best package of available packages
 # NOTE: It would increase processing time to do so, likely from O(N) to O(N^2) Complexity
@@ -177,7 +196,7 @@ def fill_truck(table: HashTable, truck: Truck):
 # Complexity O(N)
 def get_after_prime_packages(table: HashTable):
     packages_left: list = []
-    for package in table.hashMap:
+    for package in table:
         if package.truck_id == None:
             packages_left.append(package)
     return packages_left
