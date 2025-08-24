@@ -21,6 +21,7 @@ class Package:
         self.loading_time: datetime = None
         self.truck_id: int = None
         self.on_truck: bool = False
+        self.delayed_arrival()
     # String Representation of Package
     def __str__(self):
         nl = "\n"
@@ -96,14 +97,12 @@ class Package:
     # splits string to get time, converts to timedelta and returns
     # O(1) Complextity
     def delayed_arrival(self):
-        if "Delayed on flight---will not arrive to depot until" in self.notes:
+        if self.notes.find('Delayed') != -1:
             time: str = self.notes.split("until ")[1]
-            try:
-                stamp = datetime.strptime(time, "%H:%M")
-                self.delivery_status = deliveryStatus.DELAYED
-                return timedelta(hours=stamp.hour, minutes=stamp.minute)
-            except:
-                pass
+            time = time.split()[0]
+            stamp = datetime.strptime(time, "%H:%M")
+            self.delivery_status = deliveryStatus.DELAYED
+            return timedelta(hours=stamp.hour, minutes=stamp.minute)
         if "Wrong address listed" in self.notes:
             delta = timedelta(hours=10, minutes=20)
             return delta

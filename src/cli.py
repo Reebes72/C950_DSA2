@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from data_structure.hashTable import HashTable
 from classes.package import Package
+from classes.deliveryStatus import deliveryStatus
 
 def main_menu(table: HashTable, trucks: list):
     print("!!!!!!!!!!!!!!!!!!!!")
@@ -76,9 +77,11 @@ def display_query(table: HashTable, package_id: int, report_time: datetime):
     package: Package = table.hashSearch(package_id)
     report_delta: timedelta = timedelta(hours=report_time.hour, minutes=report_time.minute)
     package_info: str = f"[Package ID = {package.package_id}]"
-    if package.loading_time > report_delta:
+    if package.delayed_arrival() is not None and report_delta < package.delayed_arrival():
+        package_info += "\n\tStatus: Delayed"
+    elif package.loading_time > report_delta:
         package_info += "\n\tStatus: At Hub"
-    elif package.delivery_time > report_delta:
+    elif package.delivery_time > report_delta:        
         del_time: datetime = datetime.strptime(str(package.delivery_time), "%H:%M:%S")
         package_info += "\n\t Status: En Route, ETA at " + del_time.strftime("%I:%M %p")
     else:
