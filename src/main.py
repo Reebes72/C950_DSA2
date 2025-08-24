@@ -35,10 +35,9 @@ def main():
     for truck in trucks:
         utils.prime_trucks(truck, PACKAGES)
     #Finishes loading up the rest of the packages
+    utils.fill_trucks_with_deadline(PACKAGES.hashMap)
     for truck in trucks:
-        utils.fill_trucks_with_deadline(truck, PACKAGES.hashMap)
-    for truck in trucks:
-        utils.fill_truck(PACKAGES, truck)
+        utils.fill_truck(PACKAGES.hashMap, truck)
     #Sorts the Packages on the truck
     for truck in trucks:
         utils.sort_truck_packages(PACKAGES.hashMap, truck)

@@ -155,30 +155,45 @@ def prime_trucks(truck: Truck, table: HashTable):
             pack = truck.packages.pop(truck.packages.index(package))
 
 
-def fill_trucks_with_deadline(truck: Truck, table: list):
+def fill_trucks_with_deadline(table: list):
     packages_left: list = get_after_prime_packages(table)
+    test = []
     for package in packages_left:
         if package.deadline == "EOD":
             packages_left.remove(package)
-    packages_split: int = len(packages_left)/2-1
+    packages_split: int = len(packages_left)/2
     truck_1_packages = packages_left[:int(packages_split)]
     packages_split += 1
-    truck_2_packages = packages_left[int(packages_split):]
-    # Test function
-    test_array = []
-    for t in truck_1_packages:
-        test_array.append(t.package_id)
-    print(test_array)
-    test_array.clear()
-    for t in truck_2_packages:
-        test_array.append(t.package_id)
-    print(test_array)        
+    truck_2_packages = packages_left[int(packages_split):] 
+    return truck_1_packages, truck_2_packages
+    
+#This will return two lists, one of packages with deadlines, one with EOD
+#This is used to process how the packages are sorted right before delivery
+#Takes a single truck's packages
+def return_eod_deadline_arrays(truck_packages):
+    eod: list= []
+    deadline: list= []
+    for p in truck_packages:
+        if p.deadline == "EOD":
+            eod.append(p)
+        if p.deadline != "EOD":
+            deadline.append(p)
+    return eod, deadline
 # Gets the truck's packages and looks to see which packages haven't been assigned to a truck yet, fills the truck with packages.
 # NOTE: Improvements on mileage could be made here by doing a distance search on the best package of available packages
 # NOTE: It would increase processing time to do so, likely from O(N) to O(N^2) Complexity
 # Complexity O(N)
-def fill_truck(table: HashTable, truck: Truck):
+def fill_truck(table: list, truck: Truck):
     packages_left: list = get_after_prime_packages(table)
+    t1, t2 = fill_trucks_with_deadline(packages_left)
+    if truck.truck_id == 1:
+        for p in t1:
+            truck.add_package(p)
+            packages_left.remove(p)
+    if truck.truck_id == 2:
+        for p in t2:
+            truck.add_package(p)
+            packages_left.remove(p)
     #Tested sort here. Worked fine
     while len(packages_left) != 0 and truck.full() is False:
         for package in packages_left:
@@ -194,7 +209,7 @@ def fill_truck(table: HashTable, truck: Truck):
 
 # Returns the packages that haven't been assigned to a truck yet after priming.  
 # Complexity O(N)
-def get_after_prime_packages(table: HashTable):
+def get_after_prime_packages(table: list):
     packages_left: list = []
     for package in table:
         if package.truck_id == None:
@@ -208,9 +223,20 @@ def get_after_prime_packages(table: HashTable):
 def sort_truck_packages(table, truck: Truck):
     unsorted_packages: list = truck.packages.copy()
     sorted_packages: list = []
+    eod, deadline = return_eod_deadline_arrays(unsorted_packages)
+    deadline_copy = deadline.copy()
     address = truck.hub_address
+    while len(deadline) > 0:
+        for p in deadline_copy:
+            current: Package = p
+            closest: Package = find_closest(address, current, deadline)
+            if closest in deadline:
+                sorted_packages.append(closest)
+                address = closest.delivery_address
+                unsorted_packages.remove(closest)
+                deadline.remove(closest)
     while len(sorted_packages) != len(truck.packages):
-        for package in table:
+        for package in unsorted_packages:
             current: Package = package
             closest: Package = find_closest(address, current, unsorted_packages)
             if closest in unsorted_packages:
